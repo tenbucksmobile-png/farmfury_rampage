@@ -16,7 +16,8 @@ Portrait mobile lane shooter ("gate runner") with a light farm-rebuilding meta. 
 What exists:
 - `Scripts/Data` — `GameTuning`, `HeroDef`, `RobotDef`, `LevelDef` (+ `GateRowDef`, `WaveDef`) and tuning structs.
 - `Scripts/Sim` — `RunSim` (fixed 60 Hz, seeded, track coordinates): steering, herd count, phyllotaxis formation, staggered fire with damage scaling above the drawn cap / projectile budget; two attack patterns — `Straight` (first robot hit) and `Lob` (Cluck's egg grenade: aimed at the nearest robot that eggs already in the air won't kill, with lead + scatter, explodes and damages every robot in the blast; with no robot in range it is lobbed at the +/- gate in the herd's lane); gates (+ − × ÷, shoot-to-improve with cap and cooldown, red→blue flip), Buzz Drone swarms, a gap-free, constant-width Bolt Walker horde per level (`LevelDef.hordeStreams`; HP flat early then ramping, armoured walkers tinted red) with Tiller Tank bosses embedded in it (bigger robots clear their own space), bite, win at track end, fail at 0. `GateMath`, `Formation`, `RunConfigFactory`.
-- `Scripts/Run` — greybox only: `RunBootstrap`, `GreyboxRunView` (shapes + TextMesh), `GreyboxHud` (uGUI legacy Text), `RunInputReader` (relative drag, A/D). Phase 2 replaces the view/HUD.
+- `Scripts/Run` — `RunBootstrap`, `RunView` (draws assigned art, greybox shapes for anything missing; one GameObject per thing, Phase 2 moves herd/projectiles to instancing), `GreyboxHud` (uGUI legacy Text), `RunInputReader` (relative drag, A/D).
+- **Drop-in art** (`Scripts/Editor/RampageArt.cs`, spec in `Assets/_Project/Art/README.md`): PNGs under `Assets/_Project/Art/` import as sprites (first import only, so manual tweaks stick) and are wired by folder + file name whenever anything there changes: `Heroes/<DisplayName>/run_*.png` + `egg.png` → `HeroDef.runFrames`/`projectileSprite`; `Robots/<DisplayNameNoSpaces>/walk_*.png` → `RobotDef.walkFrames`; `Track/ground.png`, `Effects/blast.png`, `Gates/add|subtract|multiply|divide.png` → `ScriptableObjects/Art/RunArt` (referenced by the Run scene). Menu: **FarmFury Rampage > Art**. The view sizes sprites in metres (`artScale`), so pixel size doesn't matter. `ArtPipelineTests` covers it.
 - `Scripts/Editor/RampageSetup` — menu **FarmFury Rampage > Setup > Run All** (project settings, prototype content, Run scene). Content is only created when missing, so Inspector tuning is never overwritten; **Reset Prototype Content** rewrites the hero, robots and levels from the script (in place, GUIDs kept; GameTuning untouched); **Rebuild Run Scene** overwrites the scene.
 - Design changes from the GDD are listed in plan §1.4 (owner decisions): constant robot horde, Tiller Tank bosses inside it, Cluck's egg grenade.
 - Content: `ScriptableObjects/Tuning/GameTuning`, `Heroes/Hero_Cluck`, `Robots/Robot_BuzzDrone`, `Robot_BoltWalker`, `Robot_TillerTank`, `Levels/Level_Proto01..03`. Scene: `Scenes/Run.unity` (only scene in the build).
@@ -55,7 +56,8 @@ Unity must be closed (batch mode can't open a project the editor has open). Edit
 ```
 Unity.exe -batchmode -nographics -projectPath . -runTests -testPlatform EditMode -testResults results-edit.xml -logFile edit.log
 Unity.exe -batchmode -nographics -projectPath . -runTests -testPlatform PlayMode -testResults results-play.xml -logFile play.log
-Unity.exe -batchmode -nographics -projectPath . -executeMethod FarmFuryRampage.Editor.RampageSetup.RunAllBatch -logFile setup.log
+Unity.exe -batchmode -nographics -quit -projectPath . -executeMethod FarmFuryRampage.Editor.RampageSetup.RunAllBatch -logFile setup.log
+Unity.exe -batchmode -nographics -quit -projectPath . -executeMethod FarmFuryRampage.Editor.RampageSetup.ResetPrototypeContentBatch -logFile reset.log
 ```
 Write results/logs outside the repo (or delete them). Run both test platforms before each commit. One feature per commit.
 

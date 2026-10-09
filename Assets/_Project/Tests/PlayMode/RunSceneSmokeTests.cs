@@ -23,7 +23,7 @@ namespace FarmFuryRampage.Tests
             yield return new WaitForSeconds(PlaySeconds);
 
             Assert.IsTrue(bootstrap.enabled, "RunBootstrap disabled itself (missing references?).");
-            Assert.IsNotNull(Object.FindAnyObjectByType<GreyboxRunView>(), "Greybox view was not created.");
+            Assert.IsNotNull(Object.FindAnyObjectByType<RunView>(), "Greybox view was not created.");
         }
     }
 }

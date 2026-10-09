@@ -23,3 +23,6 @@ MonoBehaviour:
     homing: 0
     scrap: 25
   greyboxColor: {r: 0.85, g: 0.45, b: 0.15, a: 1}
+  walkFrames: []
+  artScale: 1.25
+  frameRate: 6

@@ -4,6 +4,7 @@
     "references": [
         "FarmFuryRampage.Data",
         "FarmFuryRampage.Sim",
+        "FarmFuryRampage.Editor",
         "Unity.Mathematics",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"

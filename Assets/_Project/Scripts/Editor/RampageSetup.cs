@@ -12,7 +12,7 @@ namespace FarmFuryRampage.Editor
 {
     /// <summary>
     /// Phase 1 project setup, runnable from the menu or headless:
-    /// Unity.exe -batchmode -quit -projectPath . -executeMethod FarmFuryRampage.Editor.RampageSetup.RunAllBatch
+    /// Unity.exe -batchmode -nographics -quit -projectPath . -executeMethod FarmFuryRampage.Editor.RampageSetup.RunAllBatch
     /// Content assets are only created when missing, so tuning done in the Inspector is never overwritten.
     /// </summary>
     public static class RampageSetup
@@ -33,15 +33,13 @@ namespace FarmFuryRampage.Editor
             ApplyProjectSettings();
             CreatePrototypeContent();
             BuildRunScene(false);
+            SetUpArt();
             AssetDatabase.SaveAssets();
             Debug.Log("[RampageSetup] Done.");
         }
 
-        public static void RunAllBatch()
-        {
-            RunAll();
-            EditorApplication.Exit(0);
-        }
+        /// <summary>Batch entry point. Run with -quit; calling EditorApplication.Exit here can crash Unity's shutdown.</summary>
+        public static void RunAllBatch() => RunAll();
 
         /// <summary>
         /// Rewrites the prototype hero, robots and levels with the values in this script (GameTuning is left alone).
@@ -52,13 +50,41 @@ namespace FarmFuryRampage.Editor
         {
             CreateContent(true);
             BuildRunScene(false);
+            SetUpArt();
         }
 
-        public static void ResetPrototypeContentBatch()
+        /// <summary>Art drop folders, the shared RunArt asset wired into the Run scene, and any art already dropped in.</summary>
+        static void SetUpArt()
         {
-            ResetPrototypeContent();
-            EditorApplication.Exit(0);
+            RampageArt.CreateFolders();
+            WireSceneArt();
+            RampageArt.AssignAll();
         }
+
+        static void WireSceneArt()
+        {
+            if (!Application.isBatchMode && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+            var scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+            // Load after opening the scene: a single-mode scene open unloads assets nothing references yet.
+            RunArt art = RampageArt.GetOrCreateRunArt();
+            foreach (GameObject root in scene.GetRootGameObjects())
+            {
+                var bootstrap = root.GetComponentInChildren<RunBootstrap>();
+                if (bootstrap == null) continue;
+                var so = new SerializedObject(bootstrap);
+                SerializedProperty property = so.FindProperty("art");
+                if (property.objectReferenceValue == art) return;
+                property.objectReferenceValue = art;
+                so.ApplyModifiedPropertiesWithoutUndo();
+                EditorSceneManager.MarkSceneDirty(scene);
+                EditorSceneManager.SaveScene(scene);
+                Debug.Log("[RampageSetup] Run scene now uses RunArt.");
+                return;
+            }
+        }
+
+        /// <summary>Batch entry point. Run with -quit.</summary>
+        public static void ResetPrototypeContentBatch() => ResetPrototypeContent();
 
         [MenuItem("FarmFury Rampage/Setup/Apply Project Settings")]
         public static void ApplyProjectSettings()

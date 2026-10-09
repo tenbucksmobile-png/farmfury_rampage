@@ -7,10 +7,12 @@ using UnityEngine;
 namespace FarmFuryRampage.Run
 {
     /// <summary>
-    /// Placeholder rendering for the Phase 1 greybox: coloured shapes and text, one GameObject per thing.
-    /// Phase 2 replaces this with instanced herd/projectile rendering and real art. Reads the sim; never changes it.
+    /// Draws the run: hero, robot, effect and gate art where it has been assigned (see <see cref="RunArt"/> and the
+    /// art fields on <see cref="HeroDef"/>/<see cref="RobotDef"/>), greybox shapes for anything without art.
+    /// One GameObject per thing for now; Phase 2 moves the herd and projectiles to instanced rendering.
+    /// Reads the sim; never changes it.
     /// </summary>
-    public sealed class GreyboxRunView : MonoBehaviour
+    public sealed class RunView : MonoBehaviour
     {
         // Sorting orders, back to front.
         const int TrackOrder = 0;
@@ -21,7 +23,7 @@ namespace FarmFuryRampage.Run
         const int HerdOrder = 6;
         const int LabelOrder = 8;
 
-        // Greybox look only; real art replaces all of these.
+        // Greybox look, used wherever art is missing.
         static readonly Color TrackColor = new(0.45f, 0.62f, 0.30f);
         static readonly Color EdgeColor = new(0.36f, 0.25f, 0.15f);
         static readonly Color StripeColor = new(0.50f, 0.68f, 0.34f);
@@ -29,6 +31,7 @@ namespace FarmFuryRampage.Run
         static readonly Color BlueGate = new(0.20f, 0.55f, 1f, 0.55f);
         static readonly Color RedGate = new(1f, 0.25f, 0.20f, 0.55f);
         static readonly Color PassedGate = new(0.5f, 0.5f, 0.5f, 0.25f);
+        static readonly Color PassedGateArt = new(1f, 1f, 1f, 0.35f);
         static readonly Color ProjectileColor = new(1f, 0.97f, 0.80f);
         static readonly Color BlastColor = new(1f, 0.75f, 0.25f, 0.85f);
         static readonly Color ArmouredColor = new(0.55f, 0.08f, 0.08f);
@@ -44,10 +47,17 @@ namespace FarmFuryRampage.Run
         const float GateLabelSize = 0.25f;
         const float CountLabelSize = 0.3f;
         const float RobotHpBarHeight = 0.12f;
+        const float GreyboxAnimalSize = 0.9f;
+        /// <summary>Offsets each animal's/robot's animation so a crowd doesn't move in lockstep.</summary>
+        const float FramePhaseStep = 0.37f;
+        /// <summary>Depth offset per metre up the screen (camera looks along +z), used for front-to-back overlap.</summary>
+        const float DepthPerMetre = 0.001f;
 
         Camera cam;
         RunSim sim;
+        HeroDef hero;
         RobotDef[] robotTypes;
+        RunArt art;
         Font font;
         Sprite square;
         Sprite circle;
@@ -58,6 +68,7 @@ namespace FarmFuryRampage.Run
         SpriteRenderer rightEdge;
         SpriteRenderer finish;
         readonly List<SpriteRenderer> stripes = new();
+        readonly List<SpriteRenderer> groundTiles = new();
         readonly List<SpriteRenderer> herd = new();
         readonly List<SpriteRenderer> robots = new();
         readonly List<SpriteRenderer> robotBars = new();
@@ -70,23 +81,30 @@ namespace FarmFuryRampage.Run
         TextMesh countLabel;
         float countPop;
 
+        bool HasHeroArt => hero.runFrames != null && hero.runFrames.Length > 0;
+        Sprite Ground => art != null ? art.ground : null;
+        Sprite BlastSprite => art != null ? art.blast : null;
+
         void Awake()
         {
             font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             square = Sprite.Create(Texture2D.whiteTexture, new Rect(0, 0, 4, 4), new Vector2(0.5f, 0.5f), 4f);
             circle = Sprite.Create(MakeCircleTexture(32), new Rect(0, 0, 32, 32), new Vector2(0.5f, 0.5f), 32f);
-            world = new GameObject("GreyboxWorld").transform;
+            world = new GameObject("RunWorld").transform;
             world.SetParent(transform, false);
         }
 
-        public void Bind(RunSim run, RobotDef[] types, HeroDef hero)
+        public void Bind(RunSim run, RobotDef[] types, HeroDef runHero, RunArt runArt)
         {
             sim = run;
+            hero = runHero;
             robotTypes = types;
+            art = runArt;
             cam = Camera.main;
 
             foreach (Transform child in world) Destroy(child.gameObject);
             stripes.Clear();
+            groundTiles.Clear();
             herd.Clear();
             robots.Clear();
             robotBars.Clear();
@@ -100,22 +118,30 @@ namespace FarmFuryRampage.Run
             rightEdge = MakeSprite("EdgeR", square, EdgeColor, StripeOrder);
             finish = MakeSprite("Finish", square, FinishColor, StripeOrder);
 
-            int stripeCount = (int)math.ceil(config.track.viewWidth * 3f / StripeSpacing) + 2;
-            for (int i = 0; i < stripeCount; i++) stripes.Add(MakeSprite("Stripe", square, StripeColor, StripeOrder));
+            if (Ground == null)
+            {
+                int stripeCount = (int)math.ceil(config.track.viewWidth * 3f / StripeSpacing) + 2;
+                for (int i = 0; i < stripeCount; i++) stripes.Add(MakeSprite("Stripe", square, StripeColor, StripeOrder));
+            }
 
+            Sprite animal = HasHeroArt ? hero.runFrames[0] : circle;
+            Color animalColor = HasHeroArt ? Color.white : hero.greyboxColor;
             for (int i = 0; i < config.herd.drawnCap; i++)
-                herd.Add(MakeSprite("Animal", circle, hero.greyboxColor, HerdOrder));
+                herd.Add(MakeSprite("Animal", animal, animalColor, HerdOrder));
 
+            Sprite shot = hero.projectileSprite != null ? hero.projectileSprite : circle;
+            Color shotColor = hero.projectileSprite != null ? Color.white : ProjectileColor;
             for (int i = 0; i < run.Projectiles.Length; i++)
-                projectiles.Add(MakeSprite("Shot", circle, ProjectileColor, ProjectileOrder));
+                projectiles.Add(MakeSprite("Shot", shot, shotColor, ProjectileOrder));
 
             foreach (GateRowState row in run.GateRows)
                 for (int p = 0; p < row.panels.Length; p++)
                     gatePanels.Add((MakeSprite("Gate", square, BlueGate, GateOrder), MakeLabel("GateLabel", GateLabelSize)));
 
+            Sprite blast = BlastSprite != null ? BlastSprite : circle;
             for (int i = 0; i < BlastPoolSize; i++)
             {
-                blasts.Add(MakeSprite("Blast", circle, BlastColor, ProjectileOrder + 1));
+                blasts.Add(MakeSprite("Blast", blast, BlastColor, ProjectileOrder + 1));
                 blasts[i].enabled = false;
                 blastAge[i] = BlastSeconds;
             }
@@ -145,19 +171,7 @@ namespace FarmFuryRampage.Run
             RunConfig config = sim.Config;
 
             FrameCamera(config);
-            float halfWidth = config.HalfWidth;
-            float viewHeight = cam.orthographicSize * 2f;
-            float camY = cam.transform.position.y;
-
-            Place(track, 0f, camY, config.track.width, viewHeight + 2f);
-            Place(leftEdge, -halfWidth - EdgeWidth * 0.5f, camY, EdgeWidth, viewHeight + 2f);
-            Place(rightEdge, halfWidth + EdgeWidth * 0.5f, camY, EdgeWidth, viewHeight + 2f);
-            Place(finish, 0f, config.levelLength - sim.HerdDistance, config.track.width, EdgeWidth);
-
-            float firstStripe = math.floor((sim.HerdDistance - viewHeight) / StripeSpacing) * StripeSpacing;
-            for (int i = 0; i < stripes.Count; i++)
-                Place(stripes[i], 0f, firstStripe + i * StripeSpacing - sim.HerdDistance, config.track.width, EdgeWidth * 0.5f);
-
+            RenderTrack(config);
             RenderHerd(config);
             RenderRobots(config);
             RenderProjectiles(config);
@@ -174,17 +188,53 @@ namespace FarmFuryRampage.Run
             cam.transform.position = new Vector3(0f, centreAboveHerd, -10f);
         }
 
+        void RenderTrack(RunConfig config)
+        {
+            float halfWidth = config.HalfWidth;
+            float viewHeight = cam.orthographicSize * 2f;
+            float camY = cam.transform.position.y;
+            Place(finish, 0f, config.levelLength - sim.HerdDistance, config.track.width, EdgeWidth);
+
+            Sprite ground = Ground;
+            bool greybox = ground == null;
+            track.enabled = leftEdge.enabled = rightEdge.enabled = greybox;
+            if (greybox)
+            {
+                Place(track, 0f, camY, config.track.width, viewHeight + 2f);
+                Place(leftEdge, -halfWidth - EdgeWidth * 0.5f, camY, EdgeWidth, viewHeight + 2f);
+                Place(rightEdge, halfWidth + EdgeWidth * 0.5f, camY, EdgeWidth, viewHeight + 2f);
+                float firstStripe = math.floor((sim.HerdDistance - viewHeight) / StripeSpacing) * StripeSpacing;
+                for (int i = 0; i < stripes.Count; i++)
+                    Place(stripes[i], 0f, firstStripe + i * StripeSpacing - sim.HerdDistance, config.track.width, EdgeWidth * 0.5f);
+                return;
+            }
+
+            // Ground art: tiles stacked up the screen, scrolling with the herd. The tile spans the view width.
+            Vector2 bounds = ground.bounds.size;
+            float tileWidth = config.track.viewWidth;
+            float tileHeight = tileWidth * bounds.y / bounds.x;
+            int needed = (int)math.ceil(viewHeight / tileHeight) + 2;
+            while (groundTiles.Count < needed) groundTiles.Add(MakeSprite("Ground", ground, Color.white, TrackOrder));
+            float bottom = camY - viewHeight * 0.5f;
+            float first = math.floor((sim.HerdDistance + bottom) / tileHeight) * tileHeight - sim.HerdDistance;
+            for (int i = 0; i < groundTiles.Count; i++)
+                Place(groundTiles[i], 0f, first + (i + 0.5f) * tileHeight, tileWidth, tileHeight);
+        }
+
         void RenderHerd(RunConfig config)
         {
             int drawn = sim.DrawnCount;
-            float size = config.herd.slotSpacing * 0.9f;
+            bool hasArt = HasHeroArt;
+            float width = config.herd.slotSpacing * (hasArt ? hero.artScale : GreyboxAnimalSize);
             for (int i = 0; i < herd.Count; i++)
             {
+                SpriteRenderer animal = herd[i];
                 bool show = i < drawn;
-                herd[i].enabled = show;
+                animal.enabled = show;
                 if (!show) continue;
+                if (hasArt) animal.sprite = Frame(hero.runFrames, hero.frameRate, i);
                 float2 offset = Formation.SlotOffset(i, config.herd.slotSpacing);
-                Place(herd[i], sim.HerdX + offset.x, offset.y, size, size);
+                PlaceFit(animal, sim.HerdX + offset.x, offset.y, width);
             }
 
             countPop = math.max(0f, countPop - Time.deltaTime * 4f);
@@ -212,21 +262,26 @@ namespace FarmFuryRampage.Run
                 SpriteRenderer bar = robotBars[used];
                 used++;
 
-                float size = config.robotTypes[robot.type].radius * 2f;
+                RobotDef def = robotTypes[robot.type];
+                bool hasArt = def.walkFrames != null && def.walkFrames.Length > 0;
+                float diameter = config.robotTypes[robot.type].radius * 2f;
                 float y = robot.distance - sim.HerdDistance;
                 body.enabled = true;
+                body.sprite = hasArt ? Frame(def.walkFrames, def.frameRate, i) : square;
+
                 // Armoured robots (horde HP ramp) shade toward dark red so tougher stretches read at a glance.
                 float baseHp = config.robotTypes[robot.type].hp * config.RobotHpScale;
                 float armour = baseHp > 0f ? math.saturate(math.log2(math.max(1f, robot.maxHp / baseHp)) / math.log2(FullArmourTint)) : 0f;
-                body.color = Color.Lerp(robotTypes[robot.type].greyboxColor, ArmouredColor, armour);
-                Place(body, robot.x, y, size, size);
+                body.color = Color.Lerp(hasArt ? Color.white : def.greyboxColor, ArmouredColor, armour);
+                if (hasArt) PlaceFit(body, robot.x, y, diameter * def.artScale);
+                else Place(body, robot.x, y, diameter, diameter);
 
                 bool damaged = robot.hp < robot.maxHp;
                 bar.enabled = damaged;
                 if (!damaged) continue;
                 float fraction = math.saturate(robot.hp / robot.maxHp);
-                Place(bar, robot.x - size * 0.5f * (1f - fraction), y + size * 0.5f + RobotHpBarHeight,
-                    size * fraction, RobotHpBarHeight);
+                Place(bar, robot.x - diameter * 0.5f * (1f - fraction), y + diameter * 0.5f + RobotHpBarHeight,
+                    diameter * fraction, RobotHpBarHeight);
             }
 
             for (int i = used; i < robots.Count; i++)
@@ -239,6 +294,7 @@ namespace FarmFuryRampage.Run
         void RenderProjectiles(RunConfig config)
         {
             Projectile[] state = sim.Projectiles;
+            bool hasArt = hero.projectileSprite != null;
             for (int i = 0; i < projectiles.Count; i++)
             {
                 Projectile p = state[i];
@@ -248,7 +304,8 @@ namespace FarmFuryRampage.Run
                 float y = p.distance - sim.HerdDistance;
                 if (!p.lob)
                 {
-                    Place(projectiles[i], p.x, y, ProjectileSize, ProjectileSize);
+                    if (hasArt) PlaceFit(projectiles[i], p.x, y, ProjectileSize);
+                    else Place(projectiles[i], p.x, y, ProjectileSize, ProjectileSize);
                     continue;
                 }
 
@@ -256,13 +313,16 @@ namespace FarmFuryRampage.Run
                 float t = math.saturate(p.FlightFraction);
                 float height = 4f * t * (1f - t);
                 float size = EggSize * (1f + EggApexScale * height);
-                Place(projectiles[i], p.x, y + config.hero.arcHeight * height, size, size * 1.25f);
+                float lift = config.hero.arcHeight * height;
+                if (hasArt) PlaceFit(projectiles[i], p.x, y + lift, size);
+                else Place(projectiles[i], p.x, y + lift, size, size * 1.25f);
             }
         }
 
         void RenderBlasts(RunConfig config)
         {
             float diameter = config.hero.blastRadius * 2f;
+            bool hasArt = BlastSprite != null;
             for (int i = 0; i < blasts.Count; i++)
             {
                 blastAge[i] += Time.deltaTime;
@@ -271,10 +331,12 @@ namespace FarmFuryRampage.Run
                 if (t >= 1f) continue;
 
                 float size = diameter * (0.5f + 0.5f * t);
-                Color color = BlastColor;
-                color.a *= 1f - t;
+                Color color = hasArt ? Color.white : BlastColor;
+                color.a *= 1f - t * t;
                 blasts[i].color = color;
-                Place(blasts[i], blastPosition[i].x, blastPosition[i].y - sim.HerdDistance, size, size);
+                float y = blastPosition[i].y - sim.HerdDistance;
+                if (hasArt) PlaceFit(blasts[i], blastPosition[i].x, y, size);
+                else Place(blasts[i], blastPosition[i].x, y, size, size);
             }
         }
 
@@ -291,13 +353,43 @@ namespace FarmFuryRampage.Run
                     (SpriteRenderer panel, TextMesh label) = gatePanels[n];
                     GatePanelState state = row.panels[p];
                     float x = -config.HalfWidth + panelWidth * (p + 0.5f);
-                    bool chosen = row.passed && row.chosenPanel == p;
-                    panel.color = row.passed && !chosen ? PassedGate : GateColor(state.kind);
-                    Place(panel, x, y, panelWidth * 0.94f, depth);
+                    bool faded = row.passed && row.chosenPanel != p;
+                    Sprite gateArt = GateSprite(state.kind);
+                    if (gateArt != null)
+                    {
+                        panel.sprite = gateArt;
+                        panel.color = faded ? PassedGateArt : Color.white;
+                        PlaceFit(panel, x, y, panelWidth * 0.94f);
+                    }
+                    else
+                    {
+                        panel.sprite = square;
+                        panel.color = faded ? PassedGate : GateColor(state.kind);
+                        Place(panel, x, y, panelWidth * 0.94f, depth);
+                    }
                     label.text = GateLabel(state);
                     label.transform.position = new Vector3(x, y, 0f);
                 }
             }
+        }
+
+        Sprite GateSprite(GateKind kind)
+        {
+            if (art == null) return null;
+            return kind switch
+            {
+                GateKind.Add => art.gateAdd,
+                GateKind.Subtract => art.gateSubtract,
+                GateKind.Multiply => art.gateMultiply,
+                GateKind.Divide => art.gateDivide,
+                _ => null,
+            };
+        }
+
+        static Sprite Frame(Sprite[] frames, float frameRate, int phaseIndex)
+        {
+            int frame = (int)math.floor(Time.time * frameRate + phaseIndex * FramePhaseStep);
+            return frames[((frame % frames.Length) + frames.Length) % frames.Length];
         }
 
         static Color GateColor(GateKind kind) =>
@@ -340,11 +432,23 @@ namespace FarmFuryRampage.Run
             return text;
         }
 
+        /// <summary>
+        /// Sizes a sprite to exactly width x height world units, whatever its pixel size. Things lower on screen get a
+        /// slightly nearer depth, so within a sorting layer the front of a crowd draws over the back.
+        /// </summary>
         static void Place(SpriteRenderer sr, float x, float y, float width, float height)
         {
+            Vector2 bounds = sr.sprite.bounds.size;
             Transform t = sr.transform;
-            t.position = new Vector3(x, y, 0f);
-            t.localScale = new Vector3(width, height, 1f);
+            t.position = new Vector3(x, y, y * DepthPerMetre);
+            t.localScale = new Vector3(width / bounds.x, height / bounds.y, 1f);
+        }
+
+        /// <summary>Sizes a sprite to the given width in world units, keeping the art's aspect ratio.</summary>
+        static void PlaceFit(SpriteRenderer sr, float x, float y, float width)
+        {
+            Vector2 bounds = sr.sprite.bounds.size;
+            Place(sr, x, y, width, width * bounds.y / bounds.x);
         }
 
         static Texture2D MakeCircleTexture(int size)

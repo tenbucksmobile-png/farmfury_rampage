@@ -28,3 +28,7 @@ MonoBehaviour:
     scatter: 0.6
     arcHeight: 2.5
   greyboxColor: {r: 1, g: 0.92, b: 0.55, a: 1}
+  runFrames: []
+  projectileSprite: {fileID: 0}
+  artScale: 1.6
+  frameRate: 10

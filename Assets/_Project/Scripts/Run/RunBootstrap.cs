@@ -16,12 +16,13 @@ namespace FarmFuryRampage.Run
 
         [SerializeField] GameTuning tuning;
         [SerializeField] HeroDef hero;
+        [SerializeField, Tooltip("Shared run art; optional, greybox shapes are used for anything missing.")] RunArt art;
         [SerializeField] LevelDef[] levels;
         [SerializeField] int startLevel;
 
         RunSim sim;
         RunInputReader input;
-        GreyboxRunView view;
+        RunView view;
         GreyboxHud hud;
         int levelIndex;
         float accumulator;
@@ -36,7 +37,7 @@ namespace FarmFuryRampage.Run
             }
 
             Application.targetFrameRate = tuning.tickRate;
-            view = gameObject.AddComponent<GreyboxRunView>();
+            view = gameObject.AddComponent<RunView>();
             hud = gameObject.AddComponent<GreyboxHud>();
             input = new RunInputReader(tuning.track.width, tuning.herd.dragSensitivity);
             StartLevel(Mathf.Clamp(startLevel, 0, levels.Length - 1));
@@ -47,7 +48,7 @@ namespace FarmFuryRampage.Run
             levelIndex = index;
             RunConfig config = RunConfigFactory.Create(tuning, hero, levels[index], out RobotDef[] robotTypes);
             sim = new RunSim(config);
-            view.Bind(sim, robotTypes, hero);
+            view.Bind(sim, robotTypes, hero, art);
             input.Reset();
             accumulator = 0f;
         }
