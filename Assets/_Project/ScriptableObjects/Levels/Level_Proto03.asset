@@ -66,75 +66,68 @@ MonoBehaviour:
     - kind: 0
       value: 25
   waves:
-  - distance: 30
-    robot: {fileID: 11400000, guid: 01529c9cc02c4d746b69ce49893955a9, type: 2}
+  - distance: 70
+    robot: {fileID: 11400000, guid: a5cd0a9c1f43ac94b8178b232cde2fcd, type: 2}
     x: 0
-    count: 3
-    spacing: 0.95
-    columns: 5
-    columnSpacing: 0.95
-    xJitter: 0
-  - distance: 62
-    robot: {fileID: 11400000, guid: 01529c9cc02c4d746b69ce49893955a9, type: 2}
-    x: 0
-    count: 4
-    spacing: 0.95
-    columns: 5
-    columnSpacing: 0.95
-    xJitter: 0
-  - distance: 80
-    robot: {fileID: 11400000, guid: 4f7f8df6388dfe449a2d3f674bd1f7c3, type: 2}
-    x: 0
-    count: 12
-    spacing: 0.5
+    count: 1
+    spacing: 0
     columns: 1
     columnSpacing: 0
-    xJitter: 3
-  - distance: 92
-    robot: {fileID: 11400000, guid: 01529c9cc02c4d746b69ce49893955a9, type: 2}
-    x: 0
-    count: 6
-    spacing: 0.95
-    columns: 8
-    columnSpacing: 0.95
     xJitter: 0
   - distance: 120
+    robot: {fileID: 11400000, guid: a5cd0a9c1f43ac94b8178b232cde2fcd, type: 2}
+    x: 1.5
+    count: 1
+    spacing: 0
+    columns: 1
+    columnSpacing: 0
+    xJitter: 0
+  - distance: 170
+    robot: {fileID: 11400000, guid: a5cd0a9c1f43ac94b8178b232cde2fcd, type: 2}
+    x: -1.5
+    count: 1
+    spacing: 0
+    columns: 1
+    columnSpacing: 0
+    xJitter: 0
+  - distance: 210
+    robot: {fileID: 11400000, guid: a5cd0a9c1f43ac94b8178b232cde2fcd, type: 2}
+    x: -2
+    count: 1
+    spacing: 0
+    columns: 1
+    columnSpacing: 0
+    xJitter: 0
+  - distance: 210
+    robot: {fileID: 11400000, guid: a5cd0a9c1f43ac94b8178b232cde2fcd, type: 2}
+    x: 2
+    count: 1
+    spacing: 0
+    columns: 1
+    columnSpacing: 0
+    xJitter: 0
+  - distance: 95
     robot: {fileID: 11400000, guid: 4f7f8df6388dfe449a2d3f674bd1f7c3, type: 2}
     x: 0
-    count: 20
-    spacing: 0.35
+    count: 15
+    spacing: 0.4
     columns: 1
     columnSpacing: 0
     xJitter: 3.5
-  - distance: 128
+  - distance: 150
+    robot: {fileID: 11400000, guid: 4f7f8df6388dfe449a2d3f674bd1f7c3, type: 2}
+    x: 0
+    count: 15
+    spacing: 0.4
+    columns: 1
+    columnSpacing: 0
+    xJitter: 3.5
+  hordeStreams:
+  - startDistance: 25
+    endDistance: 230
     robot: {fileID: 11400000, guid: 01529c9cc02c4d746b69ce49893955a9, type: 2}
     x: 0
-    count: 6
-    spacing: 0.95
-    columns: 9
+    columnsStart: 2
+    columnsEnd: 6
+    rowSpacing: 2
     columnSpacing: 0.95
-    xJitter: 0
-  - distance: 158
-    robot: {fileID: 11400000, guid: 01529c9cc02c4d746b69ce49893955a9, type: 2}
-    x: 0
-    count: 7
-    spacing: 0.95
-    columns: 9
-    columnSpacing: 0.95
-    xJitter: 0
-  - distance: 188
-    robot: {fileID: 11400000, guid: 01529c9cc02c4d746b69ce49893955a9, type: 2}
-    x: 0
-    count: 8
-    spacing: 0.95
-    columns: 9
-    columnSpacing: 0.95
-    xJitter: 0
-  - distance: 220
-    robot: {fileID: 11400000, guid: 01529c9cc02c4d746b69ce49893955a9, type: 2}
-    x: 0
-    count: 10
-    spacing: 0.95
-    columns: 9
-    columnSpacing: 0.95
-    xJitter: 0

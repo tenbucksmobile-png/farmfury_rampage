@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Level_Proto01
   m_EditorClassIdentifier: FarmFuryRampage.Data::FarmFuryRampage.Data.LevelDef
   id: proto_01
-  displayName: "Proto 1 \xB7 First Horde"
+  displayName: "Proto 1 \xB7 The Horde"
   length: 180
   difficultyLevel: 1
   startingHerd: 5
@@ -58,15 +58,23 @@ MonoBehaviour:
     - kind: 1
       value: 20
   waves:
-  - distance: 28
-    robot: {fileID: 11400000, guid: 01529c9cc02c4d746b69ce49893955a9, type: 2}
+  - distance: 70
+    robot: {fileID: 11400000, guid: a5cd0a9c1f43ac94b8178b232cde2fcd, type: 2}
     x: 0
-    count: 3
-    spacing: 0.95
-    columns: 4
-    columnSpacing: 0.95
+    count: 1
+    spacing: 0
+    columns: 1
+    columnSpacing: 0
     xJitter: 0
-  - distance: 55
+  - distance: 130
+    robot: {fileID: 11400000, guid: a5cd0a9c1f43ac94b8178b232cde2fcd, type: 2}
+    x: -1.5
+    count: 1
+    spacing: 0
+    columns: 1
+    columnSpacing: 0
+    xJitter: 0
+  - distance: 60
     robot: {fileID: 11400000, guid: 4f7f8df6388dfe449a2d3f674bd1f7c3, type: 2}
     x: 0
     count: 6
@@ -74,23 +82,7 @@ MonoBehaviour:
     columns: 1
     columnSpacing: 0
     xJitter: 2.5
-  - distance: 62
-    robot: {fileID: 11400000, guid: 01529c9cc02c4d746b69ce49893955a9, type: 2}
-    x: -1.5
-    count: 4
-    spacing: 0.95
-    columns: 4
-    columnSpacing: 0.95
-    xJitter: 0
-  - distance: 88
-    robot: {fileID: 11400000, guid: 01529c9cc02c4d746b69ce49893955a9, type: 2}
-    x: 1
-    count: 4
-    spacing: 0.95
-    columns: 6
-    columnSpacing: 0.95
-    xJitter: 0
-  - distance: 118
+  - distance: 115
     robot: {fileID: 11400000, guid: 4f7f8df6388dfe449a2d3f674bd1f7c3, type: 2}
     x: 0
     count: 10
@@ -98,19 +90,12 @@ MonoBehaviour:
     columns: 1
     columnSpacing: 0
     xJitter: 3.5
-  - distance: 125
+  hordeStreams:
+  - startDistance: 25
+    endDistance: 170
     robot: {fileID: 11400000, guid: 01529c9cc02c4d746b69ce49893955a9, type: 2}
     x: 0
-    count: 6
-    spacing: 0.95
-    columns: 7
+    columnsStart: 2
+    columnsEnd: 6
+    rowSpacing: 2.5
     columnSpacing: 0.95
-    xJitter: 0
-  - distance: 150
-    robot: {fileID: 11400000, guid: 01529c9cc02c4d746b69ce49893955a9, type: 2}
-    x: 0
-    count: 6
-    spacing: 0.95
-    columns: 8
-    columnSpacing: 0.95
-    xJitter: 0

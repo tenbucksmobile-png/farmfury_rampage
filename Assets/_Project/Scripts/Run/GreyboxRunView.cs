@@ -103,12 +103,6 @@ namespace FarmFuryRampage.Run
             for (int i = 0; i < config.herd.drawnCap; i++)
                 herd.Add(MakeSprite("Animal", circle, hero.greyboxColor, HerdOrder));
 
-            for (int i = 0; i < run.Robots.Length; i++)
-            {
-                robots.Add(MakeSprite("Robot", square, Color.white, RobotOrder));
-                robotBars.Add(MakeSprite("RobotHp", square, Color.red, RobotOrder + 1));
-            }
-
             for (int i = 0; i < run.Projectiles.Length; i++)
                 projectiles.Add(MakeSprite("Shot", circle, ProjectileColor, ProjectileOrder));
 
@@ -196,27 +190,43 @@ namespace FarmFuryRampage.Run
             countLabel.transform.position = new Vector3(sim.HerdX, sim.HerdFootprint + 0.8f, 0f);
         }
 
+        /// <summary>Draws live robots from a pool that grows on demand (a level-long horde has far more robots than are ever alive).</summary>
         void RenderRobots(RunConfig config)
         {
             Robot[] state = sim.Robots;
-            for (int i = 0; i < robots.Count; i++)
+            int used = 0;
+            for (int i = 0; i < state.Length; i++)
             {
                 Robot robot = state[i];
-                robots[i].enabled = robot.active;
-                bool damaged = robot.active && robot.hp < robot.maxHp;
-                robotBars[i].enabled = damaged;
                 if (!robot.active) continue;
+                if (used == robots.Count)
+                {
+                    robots.Add(MakeSprite("Robot", square, Color.white, RobotOrder));
+                    robotBars.Add(MakeSprite("RobotHp", square, Color.red, RobotOrder + 1));
+                }
+
+                SpriteRenderer body = robots[used];
+                SpriteRenderer bar = robotBars[used];
+                used++;
 
                 float size = config.robotTypes[robot.type].radius * 2f;
                 float y = robot.distance - sim.HerdDistance;
-                robots[i].color = robotTypes[robot.type].greyboxColor;
-                Place(robots[i], robot.x, y, size, size);
-                if (damaged)
-                {
-                    float fraction = math.saturate(robot.hp / robot.maxHp);
-                    Place(robotBars[i], robot.x - size * 0.5f * (1f - fraction), y + size * 0.5f + RobotHpBarHeight,
-                        size * fraction, RobotHpBarHeight);
-                }
+                body.enabled = true;
+                body.color = robotTypes[robot.type].greyboxColor;
+                Place(body, robot.x, y, size, size);
+
+                bool damaged = robot.hp < robot.maxHp;
+                bar.enabled = damaged;
+                if (!damaged) continue;
+                float fraction = math.saturate(robot.hp / robot.maxHp);
+                Place(bar, robot.x - size * 0.5f * (1f - fraction), y + size * 0.5f + RobotHpBarHeight,
+                    size * fraction, RobotHpBarHeight);
+            }
+
+            for (int i = used; i < robots.Count; i++)
+            {
+                robots[i].enabled = false;
+                robotBars[i].enabled = false;
             }
         }
 

@@ -110,6 +110,95 @@ namespace FarmFuryRampage.Tests
         }
 
         [Test]
+        public void HordeStream_IsConstantAndWidensAlongTheLevel()
+        {
+            var tuning = ScriptableObject.CreateInstance<GameTuning>();
+            tuning.track.width = 9f;
+            var hero = ScriptableObject.CreateInstance<HeroDef>();
+            var walker = ScriptableObject.CreateInstance<RobotDef>();
+            walker.stats.radius = 0.42f;
+            var level = ScriptableObject.CreateInstance<LevelDef>();
+            level.length = 100f;
+            level.hordeStreams = new List<HordeStreamDef>
+            {
+                new() { startDistance = 10f, endDistance = 20f, robot = walker, columnsStart = 3, columnsEnd = 7, rowSpacing = 1f, columnSpacing = 0.95f },
+            };
+
+            try
+            {
+                RunConfig config = RunConfigFactory.Create(tuning, hero, level, out _);
+
+                var perRow = new SortedDictionary<float, int>();
+                foreach (SpawnConfig s in config.spawns)
+                    perRow[s.distance] = perRow.TryGetValue(s.distance, out int n) ? n + 1 : 1;
+
+                Assert.AreEqual(11, perRow.Count, "a row every metre from 10 to 20, no gaps");
+                int previous = 0;
+                foreach (int columns in perRow.Values)
+                {
+                    Assert.GreaterOrEqual(columns, previous, "never narrows");
+                    previous = columns;
+                }
+                Assert.AreEqual(3, perRow[10f]);
+                Assert.AreEqual(7, perRow[20f]);
+            }
+            finally
+            {
+                Object.DestroyImmediate(tuning);
+                Object.DestroyImmediate(hero);
+                Object.DestroyImmediate(walker);
+                Object.DestroyImmediate(level);
+            }
+        }
+
+        [Test]
+        public void BossRobotInsideTheHorde_ClearsItsOwnSpace()
+        {
+            var tuning = ScriptableObject.CreateInstance<GameTuning>();
+            tuning.track.width = 9f;
+            var hero = ScriptableObject.CreateInstance<HeroDef>();
+            var walker = ScriptableObject.CreateInstance<RobotDef>();
+            walker.stats.radius = 0.42f;
+            var tank = ScriptableObject.CreateInstance<RobotDef>();
+            tank.stats.radius = 1.1f;
+            var level = ScriptableObject.CreateInstance<LevelDef>();
+            level.length = 100f;
+            level.hordeStreams = new List<HordeStreamDef>
+            {
+                new() { startDistance = 10f, endDistance = 30f, robot = walker, columnsStart = 5, columnsEnd = 5, rowSpacing = 1f, columnSpacing = 0.95f },
+            };
+            level.waves = new List<WaveDef> { new() { distance = 20f, robot = tank, x = 0f, count = 1, columns = 1 } };
+
+            try
+            {
+                RunConfig config = RunConfigFactory.Create(tuning, hero, level, out RobotDef[] types);
+                int tankType = System.Array.IndexOf(types, tank);
+
+                int tanks = 0;
+                foreach (SpawnConfig s in config.spawns)
+                {
+                    if (s.robotType == tankType)
+                    {
+                        tanks++;
+                        continue;
+                    }
+                    float gap = math.length(new float2(s.x, s.distance - 20f));
+                    Assert.GreaterOrEqual(gap, 1.1f + 0.42f - 1e-4f, $"walker at ({s.x}, {s.distance}) overlaps the tank");
+                }
+                Assert.AreEqual(1, tanks);
+                Assert.Less(config.spawns.Length, 21 * 5 + 1, "some walkers were removed to make room");
+            }
+            finally
+            {
+                Object.DestroyImmediate(tuning);
+                Object.DestroyImmediate(hero);
+                Object.DestroyImmediate(walker);
+                Object.DestroyImmediate(tank);
+                Object.DestroyImmediate(level);
+            }
+        }
+
+        [Test]
         public void HordeWave_ExpandsToAPackedBlockCentredOnX()
         {
             var tuning = ScriptableObject.CreateInstance<GameTuning>();

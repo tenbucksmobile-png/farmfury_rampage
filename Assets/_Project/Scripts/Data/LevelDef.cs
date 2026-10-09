@@ -38,6 +38,27 @@ namespace FarmFuryRampage.Data
     }
 
     /// <summary>
+    /// An unbroken, tightly packed horde from <see cref="startDistance"/> to <see cref="endDistance"/>: a row every
+    /// <see cref="rowSpacing"/> metres, widening from <see cref="columnsStart"/> to <see cref="columnsEnd"/> robots.
+    /// Bigger robots (elites, bosses) placed inside it clear their own space in the pack.
+    /// </summary>
+    [Serializable]
+    public sealed class HordeStreamDef
+    {
+        public float startDistance;
+        public float endDistance;
+        public RobotDef robot;
+        [Tooltip("Track X of the stream centre in metres.")]
+        public float x;
+        [Min(1)] public int columnsStart = 3;
+        [Min(1)] public int columnsEnd = 3;
+        [Tooltip("Metres between rows along the track.")]
+        public float rowSpacing = 1f;
+        [Tooltip("Metres between robots across the track.")]
+        public float columnSpacing = 1f;
+    }
+
+    /// <summary>
     /// A level, authored only in track coordinates (x, distance). The LevelDef validation test rejects anything
     /// outside the track bounds or the level length.
     /// </summary>
@@ -56,5 +77,6 @@ namespace FarmFuryRampage.Data
         public uint seed = 1;
         public List<GateRowDef> gateRows = new();
         public List<WaveDef> waves = new();
+        public List<HordeStreamDef> hordeStreams = new();
     }
 }

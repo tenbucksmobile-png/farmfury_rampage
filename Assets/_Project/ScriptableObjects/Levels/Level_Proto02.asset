@@ -58,67 +58,44 @@ MonoBehaviour:
     - kind: 0
       value: 15
   waves:
-  - distance: 30
-    robot: {fileID: 11400000, guid: 01529c9cc02c4d746b69ce49893955a9, type: 2}
-    x: 0
-    count: 3
-    spacing: 0.95
-    columns: 5
-    columnSpacing: 0.95
-    xJitter: 0
-  - distance: 58
-    robot: {fileID: 11400000, guid: 4f7f8df6388dfe449a2d3f674bd1f7c3, type: 2}
-    x: -1
-    count: 8
-    spacing: 0.7
+  - distance: 80
+    robot: {fileID: 11400000, guid: a5cd0a9c1f43ac94b8178b232cde2fcd, type: 2}
+    x: 1
+    count: 1
+    spacing: 0
     columns: 1
     columnSpacing: 0
-    xJitter: 3
-  - distance: 66
-    robot: {fileID: 11400000, guid: 01529c9cc02c4d746b69ce49893955a9, type: 2}
+    xJitter: 0
+  - distance: 140
+    robot: {fileID: 11400000, guid: a5cd0a9c1f43ac94b8178b232cde2fcd, type: 2}
     x: -1
-    count: 5
-    spacing: 0.95
-    columns: 5
-    columnSpacing: 0.95
+    count: 1
+    spacing: 0
+    columns: 1
+    columnSpacing: 0
     xJitter: 0
-  - distance: 92
-    robot: {fileID: 11400000, guid: 01529c9cc02c4d746b69ce49893955a9, type: 2}
+  - distance: 180
+    robot: {fileID: 11400000, guid: a5cd0a9c1f43ac94b8178b232cde2fcd, type: 2}
     x: 0
-    count: 5
-    spacing: 0.95
-    columns: 7
-    columnSpacing: 0.95
+    count: 1
+    spacing: 0
+    columns: 1
+    columnSpacing: 0
     xJitter: 0
-  - distance: 122
+  - distance: 100
     robot: {fileID: 11400000, guid: 4f7f8df6388dfe449a2d3f674bd1f7c3, type: 2}
     x: 0
-    count: 12
-    spacing: 0.5
+    count: 10
+    spacing: 0.6
     columns: 1
     columnSpacing: 0
     xJitter: 3.5
-  - distance: 130
+  hordeStreams:
+  - startDistance: 25
+    endDistance: 200
     robot: {fileID: 11400000, guid: 01529c9cc02c4d746b69ce49893955a9, type: 2}
     x: 0
-    count: 7
-    spacing: 0.95
-    columns: 7
+    columnsStart: 2
+    columnsEnd: 7
+    rowSpacing: 2
     columnSpacing: 0.95
-    xJitter: 0
-  - distance: 160
-    robot: {fileID: 11400000, guid: 01529c9cc02c4d746b69ce49893955a9, type: 2}
-    x: 0
-    count: 8
-    spacing: 0.95
-    columns: 8
-    columnSpacing: 0.95
-    xJitter: 0
-  - distance: 188
-    robot: {fileID: 11400000, guid: 01529c9cc02c4d746b69ce49893955a9, type: 2}
-    x: 0
-    count: 8
-    spacing: 0.95
-    columns: 9
-    columnSpacing: 0.95
-    xJitter: 0

@@ -55,16 +55,18 @@ namespace FarmFuryRampage.Sim
             var random = new Random(level.seed == 0 ? 1u : level.seed);
             float halfWidth = tuning.track.width * 0.5f;
 
+            int TypeOf(RobotDef robot)
+            {
+                int type = types.IndexOf(robot);
+                if (type >= 0) return type;
+                types.Add(robot);
+                return types.Count - 1;
+            }
+
             foreach (WaveDef wave in level.waves)
             {
                 if (wave.robot == null) continue;
-                int type = types.IndexOf(wave.robot);
-                if (type < 0)
-                {
-                    type = types.Count;
-                    types.Add(wave.robot);
-                }
-
+                int type = TypeOf(wave.robot);
                 int columns = math.max(1, wave.columns);
                 float firstColumn = -0.5f * (columns - 1) * wave.columnSpacing;
                 for (int i = 0; i < wave.count; i++)
@@ -79,16 +81,41 @@ namespace FarmFuryRampage.Sim
                     });
                 }
             }
+
+            foreach (HordeStreamDef stream in level.hordeStreams)
+            {
+                if (stream.robot == null || stream.rowSpacing <= 0f) continue;
+                int type = TypeOf(stream.robot);
+                float span = stream.endDistance - stream.startDistance;
+                int rowCount = (int)math.floor(span / stream.rowSpacing) + 1;
+                for (int i = 0; i < rowCount; i++)
+                {
+                    float t = rowCount > 1 ? (float)i / (rowCount - 1) : 0f;
+                    int columns = math.max(1, (int)math.round(math.lerp(stream.columnsStart, stream.columnsEnd, t)));
+                    float firstColumn = -0.5f * (columns - 1) * stream.columnSpacing;
+                    for (int c = 0; c < columns; c++)
+                    {
+                        spawns.Add(new SpawnConfig
+                        {
+                            robotType = type,
+                            x = math.clamp(stream.x + firstColumn + c * stream.columnSpacing, -halfWidth, halfWidth),
+                            distance = stream.startDistance + i * stream.rowSpacing,
+                        });
+                    }
+                }
+            }
+
+            robotTypes = types.ToArray();
+            var stats = new RobotStats[robotTypes.Length];
+            for (int i = 0; i < stats.Length; i++) stats[i] = robotTypes[i].stats;
+
+            spawns = ClearSpaceAroundBigRobots(spawns, stats);
             spawns.Sort((a, b) => a.distance.CompareTo(b.distance));
 
             var rows = new List<GateRowConfig>(level.gateRows.Count);
             foreach (GateRowDef row in level.gateRows)
                 rows.Add(new GateRowConfig { distance = row.distance, panels = (GatePanelDef[])row.panels.Clone() });
             rows.Sort((a, b) => a.distance.CompareTo(b.distance));
-
-            robotTypes = types.ToArray();
-            var stats = new RobotStats[robotTypes.Length];
-            for (int i = 0; i < stats.Length; i++) stats[i] = robotTypes[i].stats;
 
             return new RunConfig
             {
@@ -106,6 +133,42 @@ namespace FarmFuryRampage.Sim
                 gateRows = rows.ToArray(),
                 spawns = spawns.ToArray(),
             };
+        }
+
+        /// <summary>
+        /// Drops any robot that overlaps a bigger one, so elites and bosses placed inside a packed horde get their own
+        /// space instead of sitting on top of the pack.
+        /// </summary>
+        static List<SpawnConfig> ClearSpaceAroundBigRobots(List<SpawnConfig> spawns, RobotStats[] stats)
+        {
+            float smallest = float.MaxValue;
+            foreach (RobotStats s in stats) smallest = math.min(smallest, s.radius);
+
+            var bigger = new List<SpawnConfig>();
+            foreach (SpawnConfig s in spawns)
+                if (stats[s.robotType].radius > smallest) bigger.Add(s);
+            if (bigger.Count == 0) return spawns;
+
+            var kept = new List<SpawnConfig>(spawns.Count);
+            foreach (SpawnConfig s in spawns)
+            {
+                float radius = stats[s.robotType].radius;
+                bool blocked = false;
+                foreach (SpawnConfig b in bigger)
+                {
+                    float bigRadius = stats[b.robotType].radius;
+                    if (bigRadius <= radius) continue;
+                    float reach = bigRadius + radius;
+                    float dd = b.distance - s.distance;
+                    if (dd > reach || dd < -reach) continue;
+                    float dx = b.x - s.x;
+                    if (dx * dx + dd * dd >= reach * reach) continue;
+                    blocked = true;
+                    break;
+                }
+                if (!blocked) kept.Add(s);
+            }
+            return kept;
         }
     }
 }

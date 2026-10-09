@@ -71,6 +71,20 @@ namespace FarmFuryRampage.Tests
                     errors.Add($"wave {w} x {wave.x} +/- {halfBlock} leaves the track (+/-{halfWidth} m)");
             }
 
+            for (int h = 0; h < level.hordeStreams.Count; h++)
+            {
+                HordeStreamDef stream = level.hordeStreams[h];
+                if (stream.robot == null) errors.Add($"horde stream {h} has no robot");
+                if (stream.rowSpacing <= 0f) errors.Add($"horde stream {h} rowSpacing must be > 0");
+                if (stream.columnsStart < 1 || stream.columnsEnd < 1) errors.Add($"horde stream {h} needs at least 1 column");
+                if (stream.startDistance <= 0f || stream.endDistance >= level.length || stream.endDistance < stream.startDistance)
+                    errors.Add($"horde stream {h} spans {stream.startDistance}..{stream.endDistance} m, outside 0..{level.length}");
+                int widest = System.Math.Max(stream.columnsStart, stream.columnsEnd);
+                float halfBlock = 0.5f * (widest - 1) * stream.columnSpacing;
+                if (stream.x - halfBlock < -halfWidth || stream.x + halfBlock > halfWidth)
+                    errors.Add($"horde stream {h} x {stream.x} +/- {halfBlock} leaves the track (+/-{halfWidth} m)");
+            }
+
             Assert.IsEmpty(errors, $"{level.name}:\n" + string.Join("\n", errors));
         }
 

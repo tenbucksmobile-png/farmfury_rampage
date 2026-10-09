@@ -27,6 +27,8 @@ namespace FarmFuryRampage.Sim
 
         Random random;
         int nextSpawn;
+        /// <summary>Every robot before this index is dead or gone; loops start here instead of at 0.</summary>
+        int firstLiveRobot;
         int nextRow;
         int projectileCursor;
 
@@ -88,6 +90,7 @@ namespace FarmFuryRampage.Sim
             TickCount++;
             Time = TickCount * tickSeconds;
 
+            while (firstLiveRobot < nextSpawn && !robots[firstLiveRobot].active) firstLiveRobot++;
             Steer(input);
             HerdDistance = math.min(HerdDistance + config.track.pace * tickSeconds, config.levelLength);
             SpawnRobots();
@@ -167,15 +170,15 @@ namespace FarmFuryRampage.Sim
                 {
                     // Hold the egg until there is something to throw at, then rejoin the rhythm at a random point
                     // so a herd that was waiting doesn't keep throwing in one synchronised volley.
-                    if (!FindLobTarget(origin, out float2 target))
+                    if (!FindLobTarget(origin, out float2 target, out int aimed))
                     {
                         emitterTimers[i] = 0f;
                         emitterHolding[i] = true;
                         continue;
                     }
-                    SpawnLob(origin, target, damage);
+                    SpawnLob(origin, target, damage, aimed);
                     for (int k = 1; k < perShot; k++)
-                        if (FindLobTarget(origin, out target)) SpawnLob(origin, target, damage);
+                        if (FindLobTarget(origin, out target, out aimed)) SpawnLob(origin, target, damage, aimed);
                     emitterTimers[i] = emitterHolding[i]
                         ? hero.fireInterval * random.NextFloat(HeldRestaggerMin, 1f)
                         : emitterTimers[i] + hero.fireInterval;
@@ -217,19 +220,19 @@ namespace FarmFuryRampage.Sim
         }
 
         /// <summary>
-        /// Lob aim: the nearest robot ahead within range, led by the flight time, plus random scatter so a herd's
-        /// throws spread across a horde. With no robot in range, the +/- gate panel in the thrower's lane (to shoot
-        /// it up). Returns false when there is nothing worth throwing at.
+        /// Lob aim: the nearest robot ahead within range that eggs already in the air won't kill, led by the flight
+        /// time, plus random scatter so a herd's throws spread across a horde. With no robot in range, the +/- gate
+        /// panel in the thrower's lane (to shoot it up). Returns false when there is nothing worth throwing at.
         /// </summary>
-        bool FindLobTarget(float2 origin, out float2 target)
+        bool FindLobTarget(float2 origin, out float2 target, out int aimed)
         {
             HeroStats hero = config.hero;
             float bestSq = hero.range * hero.range;
             int best = -1;
-            for (int r = 0; r < nextSpawn; r++)
+            for (int r = firstLiveRobot; r < nextSpawn; r++)
             {
                 Robot robot = robots[r];
-                if (!robot.active || robot.distance <= origin.y) continue;
+                if (!robot.active || robot.distance <= origin.y || robot.hp <= robot.incoming) continue;
                 float dx = robot.x - origin.x;
                 float dd = robot.distance - origin.y;
                 float sq = dx * dx + dd * dd;
@@ -238,6 +241,7 @@ namespace FarmFuryRampage.Sim
                 best = r;
             }
 
+            aimed = best;
             if (best >= 0)
             {
                 Robot robot = robots[best];
@@ -271,7 +275,7 @@ namespace FarmFuryRampage.Sim
             return false;
         }
 
-        void SpawnLob(float2 origin, float2 target, float damage)
+        void SpawnLob(float2 origin, float2 target, float damage, int aimed)
         {
             for (int n = 0; n < projectiles.Length; n++)
             {
@@ -290,7 +294,9 @@ namespace FarmFuryRampage.Sim
                     targetX = target.x,
                     targetDistance = target.y,
                     flightTime = config.hero.flightTime,
+                    targetRobot = aimed,
                 };
+                if (aimed >= 0) robots[aimed].incoming += damage;
                 projectileCursor = (index + 1) % projectiles.Length;
                 return;
             }
@@ -300,9 +306,11 @@ namespace FarmFuryRampage.Sim
         void Explode(ref Projectile p)
         {
             p.active = false;
+            if (p.targetRobot >= 0)
+                robots[p.targetRobot].incoming = math.max(0f, robots[p.targetRobot].incoming - p.damage);
             float blast = config.hero.blastRadius;
             int hits = 0;
-            for (int r = 0; r < nextSpawn; r++)
+            for (int r = firstLiveRobot; r < nextSpawn; r++)
             {
                 ref Robot robot = ref robots[r];
                 if (!robot.active) continue;
@@ -363,7 +371,7 @@ namespace FarmFuryRampage.Sim
 
                 if (HitGate(ref p, halfDepth)) continue;
 
-                for (int r = 0; r < robots.Length; r++)
+                for (int r = firstLiveRobot; r < nextSpawn; r++)
                 {
                     ref Robot robot = ref robots[r];
                     if (!robot.active) continue;
@@ -413,7 +421,7 @@ namespace FarmFuryRampage.Sim
         void MoveRobots()
         {
             float footprint = HerdFootprint;
-            for (int i = 0; i < nextSpawn; i++)
+            for (int i = firstLiveRobot; i < nextSpawn; i++)
             {
                 ref Robot robot = ref robots[i];
                 if (!robot.active) continue;

@@ -143,22 +143,33 @@ namespace FarmFuryRampage.Editor
                 r.stats = new RobotStats { hp = 20f, speed = 1.2f, bite = 2, radius = 0.42f, homing = 0f, scrap = 2 };
             });
 
+            // Boss robot inside the horde: a heavy tank that takes sustained fire. Blasts on the pack around it
+            // also catch it. (GDD tier 3; its gate-ploughing behaviour comes later.)
+            RobotDef tank = CreateOrUpdate<RobotDef>(ContentRoot + "/Robots/Robot_TillerTank.asset", overwrite, r =>
+            {
+                r.id = "tiller_tank";
+                r.displayName = "Tiller Tank";
+                r.tier = 3;
+                r.greyboxColor = new Color(0.85f, 0.45f, 0.15f);
+                r.stats = new RobotStats { hp = 600f, speed = 1f, bite = 8, radius = 1.1f, homing = 0f, scrap = 25 };
+            });
+
+            // Every level: one constant horde from start to finish that widens as it goes, with Tiller Tanks
+            // embedded in it and the odd drone swarm on top.
             CreateOrUpdate<LevelDef>(ContentRoot + "/Levels/Level_Proto01.asset", overwrite, l =>
             {
-                Level(l, "proto_01", "Proto 1 · First Horde", 180f, 1, 5, 101);
+                Level(l, "proto_01", "Proto 1 · The Horde", 180f, 1, 5, 101);
                 Row(l, 18f, Mul(2), Add(3));
                 Row(l, 45f, Add(5), Sub(3));
                 Row(l, 75f, Mul(2), Add(8));
                 Row(l, 105f, Mul(3), Add(10));
                 Row(l, 135f, Sub(5), Add(5), Mul(2));
                 Row(l, 162f, Add(10), Sub(20));
-                Horde(l, 28f, walker, 0f, 3, 4);
-                Wave(l, 55f, drone, 0f, 6, 0.8f, 2.5f);
-                Horde(l, 62f, walker, -1.5f, 4, 4);
-                Horde(l, 88f, walker, 1f, 4, 6);
-                Wave(l, 118f, drone, 0f, 10, 0.6f, 3.5f);
-                Horde(l, 125f, walker, 0f, 6, 7);
-                Horde(l, 150f, walker, 0f, 6, 8);
+                Stream(l, 25f, 170f, walker, 2, 6, 2.5f);
+                Elite(l, 70f, tank, 0f);
+                Elite(l, 130f, tank, -1.5f);
+                Wave(l, 60f, drone, 0f, 6, 0.8f, 2.5f);
+                Wave(l, 115f, drone, 0f, 10, 0.6f, 3.5f);
             });
 
             CreateOrUpdate<LevelDef>(ContentRoot + "/Levels/Level_Proto02.asset", overwrite, l =>
@@ -170,14 +181,11 @@ namespace FarmFuryRampage.Editor
                 Row(l, 105f, Div(2), Mul(2));
                 Row(l, 140f, Sub(6), Add(6), Sub(2));
                 Row(l, 175f, Mul(2), Add(15));
-                Horde(l, 30f, walker, 0f, 3, 5);
-                Wave(l, 58f, drone, -1f, 8, 0.7f, 3f);
-                Horde(l, 66f, walker, -1f, 5, 5);
-                Horde(l, 92f, walker, 0f, 5, 7);
-                Wave(l, 122f, drone, 0f, 12, 0.5f, 3.5f);
-                Horde(l, 130f, walker, 0f, 7, 7);
-                Horde(l, 160f, walker, 0f, 8, 8);
-                Horde(l, 188f, walker, 0f, 8, 9);
+                Stream(l, 25f, 200f, walker, 2, 7, 2f);
+                Elite(l, 80f, tank, 1f);
+                Elite(l, 140f, tank, -1f);
+                Elite(l, 180f, tank, 0f);
+                Wave(l, 100f, drone, 0f, 10, 0.6f, 3.5f);
             });
 
             CreateOrUpdate<LevelDef>(ContentRoot + "/Levels/Level_Proto03.asset", overwrite, l =>
@@ -190,15 +198,14 @@ namespace FarmFuryRampage.Editor
                 Row(l, 140f, Mul(2), Add(20));
                 Row(l, 175f, Sub(15), Add(10));
                 Row(l, 210f, Mul(2), Sub(5), Add(25));
-                Horde(l, 30f, walker, 0f, 3, 5);
-                Horde(l, 62f, walker, 0f, 4, 5);
-                Wave(l, 80f, drone, 0f, 12, 0.5f, 3f);
-                Horde(l, 92f, walker, 0f, 6, 8);
-                Wave(l, 120f, drone, 0f, 20, 0.35f, 3.5f);
-                Horde(l, 128f, walker, 0f, 6, 9);
-                Horde(l, 158f, walker, 0f, 7, 9);
-                Horde(l, 188f, walker, 0f, 8, 9);
-                Horde(l, 220f, walker, 0f, 10, 9);
+                Stream(l, 25f, 230f, walker, 2, 6, 2f);
+                Elite(l, 70f, tank, 0f);
+                Elite(l, 120f, tank, 1.5f);
+                Elite(l, 170f, tank, -1.5f);
+                Elite(l, 210f, tank, -2f);
+                Elite(l, 210f, tank, 2f);
+                Wave(l, 95f, drone, 0f, 15, 0.4f, 3.5f);
+                Wave(l, 150f, drone, 0f, 15, 0.4f, 3.5f);
             });
 
             AssetDatabase.SaveAssets();
@@ -264,6 +271,7 @@ namespace FarmFuryRampage.Editor
             l.seed = seed;
             l.gateRows = new List<GateRowDef>();
             l.waves = new List<WaveDef>();
+            l.hordeStreams = new List<HordeStreamDef>();
         }
 
         static void Row(LevelDef l, float distance, params GatePanelDef[] panels) =>
@@ -271,6 +279,18 @@ namespace FarmFuryRampage.Editor
 
         static void Wave(LevelDef l, float distance, RobotDef robot, float x, int count, float spacing, float xJitter) =>
             l.waves.Add(new WaveDef { distance = distance, robot = robot, x = x, count = count, spacing = spacing, xJitter = xJitter });
+
+        /// <summary>A constant packed horde from start to end, a row every rowSpacing metres, widening from columnsStart to columnsEnd robots.</summary>
+        static void Stream(LevelDef l, float start, float end, RobotDef robot, int columnsStart, int columnsEnd, float rowSpacing) =>
+            l.hordeStreams.Add(new HordeStreamDef
+            {
+                startDistance = start, endDistance = end, robot = robot, x = 0f,
+                columnsStart = columnsStart, columnsEnd = columnsEnd, rowSpacing = rowSpacing, columnSpacing = HordeSpacing,
+            });
+
+        /// <summary>A single heavy robot; placed inside a horde stream it clears its own space in the pack.</summary>
+        static void Elite(LevelDef l, float distance, RobotDef robot, float x) =>
+            l.waves.Add(new WaveDef { distance = distance, robot = robot, x = x, count = 1, columns = 1 });
 
         /// <summary>A tightly packed block of robots, <paramref name="rows"/> deep and <paramref name="columns"/> wide.</summary>
         static void Horde(LevelDef l, float distance, RobotDef robot, float x, int rows, int columns) =>

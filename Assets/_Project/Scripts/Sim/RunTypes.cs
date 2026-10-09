@@ -24,6 +24,8 @@ namespace FarmFuryRampage.Sim
         public float distance;
         public float hp;
         public float maxHp;
+        /// <summary>Damage from eggs already in the air aimed at this robot; throwers skip robots it will kill.</summary>
+        public float incoming;
     }
 
     /// <summary>
@@ -46,6 +48,8 @@ namespace FarmFuryRampage.Sim
         public float targetDistance;
         public float elapsed;
         public float flightTime;
+        /// <summary>Robot index a lob was aimed at, or -1 (a gate).</summary>
+        public int targetRobot;
 
         /// <summary>0 at the throw, 1 at the explosion (lobs only).</summary>
         public float FlightFraction => flightTime > 0f ? elapsed / flightTime : 1f;
