@@ -15,7 +15,7 @@ MonoBehaviour:
   tickRate: 60
   track:
     width: 9
-    pace: 3
+    pace: 2.5
     viewWidth: 10
     herdScreenY: 0.3
     spawnAhead: 16

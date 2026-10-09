@@ -65,13 +65,16 @@ namespace FarmFuryRampage.Sim
                     types.Add(wave.robot);
                 }
 
+                int columns = math.max(1, wave.columns);
+                float firstColumn = -0.5f * (columns - 1) * wave.columnSpacing;
                 for (int i = 0; i < wave.count; i++)
+                for (int c = 0; c < columns; c++)
                 {
                     float jitter = wave.xJitter > 0f ? random.NextFloat(-wave.xJitter, wave.xJitter) : 0f;
                     spawns.Add(new SpawnConfig
                     {
                         robotType = type,
-                        x = math.clamp(wave.x + jitter, -halfWidth, halfWidth),
+                        x = math.clamp(wave.x + firstColumn + c * wave.columnSpacing + jitter, -halfWidth, halfWidth),
                         distance = wave.distance + i * wave.spacing,
                     });
                 }

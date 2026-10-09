@@ -64,20 +64,37 @@ namespace FarmFuryRampage.Data
         public float heroBalanceTolerance;
     }
 
-    /// <summary>Firing behaviour of a hero. Every hero must come out at the same DPS per animal.</summary>
+    /// <summary>
+    /// Firing behaviour of a hero. Every hero must come out at the same single-target DPS per animal; area attacks
+    /// (Lob) are balanced against the others by time-to-clear a reference horde (Phase 2 balance test).
+    /// </summary>
     [Serializable]
     public struct HeroStats
     {
+        public AttackPattern pattern;
         [Tooltip("Seconds between shots per animal.")]
         public float fireInterval;
         public int projectilesPerShot;
         [Tooltip("Total fan angle in degrees across all projectiles of one shot.")]
         public float spreadDegrees;
+        [Tooltip("Damage per hit; for Lob, damage to every robot inside the blast.")]
         public float damagePerHit;
-        [Tooltip("Metres a projectile travels before expiring (plan G2: 12).")]
+        [Tooltip("Straight: metres a shot travels before expiring (plan G2: 12). Lob: furthest target distance.")]
         public float range;
+        [Tooltip("Straight only: shot speed in m/s.")]
         public float projectileSpeed;
+        [Tooltip("Straight only: shot collision radius in metres.")]
         public float projectileRadius;
+
+        [Header("Lob (grenade) only")]
+        [Tooltip("Explosion radius in metres.")]
+        public float blastRadius;
+        [Tooltip("Seconds from throw to explosion. The thrower leads moving robots by this much.")]
+        public float flightTime;
+        [Tooltip("Random landing offset in metres, so a herd's throws spread over the horde.")]
+        public float scatter;
+        [Tooltip("Visual only: peak height of the throw arc in metres.")]
+        public float arcHeight;
 
         public float DamagePerSecond => fireInterval > 0f ? projectilesPerShot * damagePerHit / fireInterval : 0f;
     }

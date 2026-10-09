@@ -30,9 +30,14 @@ namespace FarmFuryRampage.Run
         static readonly Color RedGate = new(1f, 0.25f, 0.20f, 0.55f);
         static readonly Color PassedGate = new(0.5f, 0.5f, 0.5f, 0.25f);
         static readonly Color ProjectileColor = new(1f, 0.97f, 0.80f);
+        static readonly Color BlastColor = new(1f, 0.75f, 0.25f, 0.85f);
         const float StripeSpacing = 5f;
         const float EdgeWidth = 0.25f;
         const float ProjectileSize = 0.25f;
+        const float EggSize = 0.35f;
+        const float EggApexScale = 0.6f;
+        const int BlastPoolSize = 64;
+        const float BlastSeconds = 0.35f;
         const float GateLabelSize = 0.25f;
         const float CountLabelSize = 0.3f;
         const float RobotHpBarHeight = 0.12f;
@@ -55,6 +60,10 @@ namespace FarmFuryRampage.Run
         readonly List<SpriteRenderer> robotBars = new();
         readonly List<SpriteRenderer> projectiles = new();
         readonly List<(SpriteRenderer panel, TextMesh label)> gatePanels = new();
+        readonly List<SpriteRenderer> blasts = new();
+        readonly float[] blastAge = new float[BlastPoolSize];
+        readonly float2[] blastPosition = new float2[BlastPoolSize];
+        int blastCursor;
         TextMesh countLabel;
         float countPop;
 
@@ -80,6 +89,7 @@ namespace FarmFuryRampage.Run
             robotBars.Clear();
             projectiles.Clear();
             gatePanels.Clear();
+            blasts.Clear();
 
             RunConfig config = run.Config;
             track = MakeSprite("Track", square, TrackColor, TrackOrder);
@@ -106,6 +116,13 @@ namespace FarmFuryRampage.Run
                 for (int p = 0; p < row.panels.Length; p++)
                     gatePanels.Add((MakeSprite("Gate", square, BlueGate, GateOrder), MakeLabel("GateLabel", GateLabelSize)));
 
+            for (int i = 0; i < BlastPoolSize; i++)
+            {
+                blasts.Add(MakeSprite("Blast", circle, BlastColor, ProjectileOrder + 1));
+                blasts[i].enabled = false;
+                blastAge[i] = BlastSeconds;
+            }
+
             countLabel = MakeLabel("HerdCount", CountLabelSize);
             countPop = 0f;
         }
@@ -113,8 +130,16 @@ namespace FarmFuryRampage.Run
         public void OnEvents(IReadOnlyList<RunEvent> events)
         {
             foreach (RunEvent e in events)
+            {
                 if (e.type == RunEventType.GatePassed || e.type == RunEventType.AnimalsLost)
                     countPop = 1f;
+                if (e.type == RunEventType.Explosion)
+                {
+                    blastAge[blastCursor] = 0f;
+                    blastPosition[blastCursor] = new float2(e.x, e.distance);
+                    blastCursor = (blastCursor + 1) % BlastPoolSize;
+                }
+            }
         }
 
         void LateUpdate()
@@ -138,7 +163,8 @@ namespace FarmFuryRampage.Run
 
             RenderHerd(config);
             RenderRobots(config);
-            RenderProjectiles();
+            RenderProjectiles(config);
+            RenderBlasts(config);
             RenderGates(config);
         }
 
@@ -194,14 +220,45 @@ namespace FarmFuryRampage.Run
             }
         }
 
-        void RenderProjectiles()
+        void RenderProjectiles(RunConfig config)
         {
             Projectile[] state = sim.Projectiles;
             for (int i = 0; i < projectiles.Count; i++)
             {
                 Projectile p = state[i];
                 projectiles[i].enabled = p.active;
-                if (p.active) Place(projectiles[i], p.x, p.distance - sim.HerdDistance, ProjectileSize, ProjectileSize);
+                if (!p.active) continue;
+
+                float y = p.distance - sim.HerdDistance;
+                if (!p.lob)
+                {
+                    Place(projectiles[i], p.x, y, ProjectileSize, ProjectileSize);
+                    continue;
+                }
+
+                // Three-quarter view: the throw's height shows as a lift up the screen and a bigger egg at the apex.
+                float t = math.saturate(p.FlightFraction);
+                float height = 4f * t * (1f - t);
+                float size = EggSize * (1f + EggApexScale * height);
+                Place(projectiles[i], p.x, y + config.hero.arcHeight * height, size, size * 1.25f);
+            }
+        }
+
+        void RenderBlasts(RunConfig config)
+        {
+            float diameter = config.hero.blastRadius * 2f;
+            for (int i = 0; i < blasts.Count; i++)
+            {
+                blastAge[i] += Time.deltaTime;
+                float t = blastAge[i] / BlastSeconds;
+                blasts[i].enabled = t < 1f;
+                if (t >= 1f) continue;
+
+                float size = diameter * (0.5f + 0.5f * t);
+                Color color = BlastColor;
+                color.a *= 1f - t;
+                blasts[i].color = color;
+                Place(blasts[i], blastPosition[i].x, blastPosition[i].y - sim.HerdDistance, size, size);
             }
         }
 

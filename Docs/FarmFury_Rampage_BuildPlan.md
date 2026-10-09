@@ -68,7 +68,15 @@ Rule used: take the plan's recommended option, and where the FarmFury line (Arca
 | G13 | Boss length | Boss HP per `LevelDef`, tuned so the expected herd clears it in 25–40 s. |
 | G14 | Ads before consent | Session-1 revives are free; the ad SDK isn't initialised until after the first session. |
 
-### 1.4 FarmFury-line alignment (what Rampage reuses)
+### 1.4 Design changes from the GDD (owner decisions)
+| Date | Change | Replaces |
+|---|---|---|
+| 2026-10-09 | **Robots attack as a horde**: tightly packed blocks (several columns wide, many rows deep) rolling slowly toward the herd as one mass. `WaveDef` has `columns`/`columnSpacing`. Bolt Walker: 1.2 m/s and **20 HP** (two eggs at difficulty 1–2), so blasts demolish chunks of the horde. Herd pace 3 → **2.5 m/s** to give time to throw before contact (runs 72–96 s). | GDD §5 single robots / small groups; Bolt Walker 60 HP at 1.8 m/s |
+| 2026-10-09 | **Cluck's egg is a grenade**: thrown in an arc at the nearest robot (leading it), explodes on landing and damages every robot in a 1.5 m blast. With no robot in range, eggs are lobbed at the +/- gate in the herd's lane. Prototype values: 12 damage, every 1.2 s per animal, 11 m range, 0.7 s flight, 0.6 m scatter. Each chicken holds its egg while nothing is in range and throw timings are golden-ratio staggered, so the herd throws a steady stream, not volleys. | GDD §4 Cluck "3 eggs in a fan every 0.6 s, 2 per egg" |
+
+Balance consequence: Cluck keeps the 10 DPS-per-animal **single-target** number, but against packed hordes the blast multiplies it. Bessie, Horace and Ducky must therefore be balanced on the GDD's real rule — time-to-clear the reference waves (which must now include hordes) within ±5% — when they are built in Phase 2, not on DPS alone. Their attacks may need area effects too (e.g. Bessie's stream piercing a whole column, Horace's boomerang sweeping a row).
+
+### 1.5 FarmFury-line alignment (what Rampage reuses)
 | Area | Line convention (source) | Rampage |
 |---|---|---|
 | Repo | Standalone repo per game, plain command-line git, `origin` on `tenbucksmobile-png`, no Git LFS; never link through Unity's GitHub flow (it creates a new default project and repo) (Stampede) | Same. Remote `farmfury_rampage`. Home-directory repo ignores the folder. |
@@ -329,7 +337,7 @@ Level length ≈ 80 s × pace before Last Stand (≈ 240 m at 3 m/s).
 ### 5.4 Heroes (all 10 DPS per animal; side effects equal value)
 | Hero | Pattern | Dmg | Trait | Fury |
 |---|---|---|---|---|
-| Cluck | 3-egg fan every 0.6 s | 2/egg | Yolk splat: slow 10% for 1 s | Egg Storm: eggs rain on whole track 3 s |
+| Cluck | **Egg grenade** (§1.4): lobbed at the nearest robot every 1.2 s, 1.5 m blast | 12 to every robot in the blast | Yolk splat: slow 10% for 1 s (not built yet) | Egg Storm: eggs rain on whole track 3 s |
 | Bessie | Continuous stream, 0.1 s ticks | 1/tick | Passes through first robot at half damage | Milk Flood: wave pushes robots back 2 m + damage |
 | Horace | Boomerang every 1.0 s | 5 out + 5 back | Hits every robot both ways | Horseshoe Hurricane: orbiting ring 4 s |
 | Ducky | Glob every 0.4 s | 4/glob | 10% chance to short 0.5 s | Monsoon: shorts every robot 1.5 s |
@@ -367,7 +375,7 @@ Requirements: Fury fill identical for all; Herd Level shared; skins cosmetic; **
 | 4 | Fix-It Bot | 250 | 1.2 | 2 | Heals robots within 3 m, 20 HP/s |
 | 5 (purple) | Bosses | 3,000–20,000 | varies | herd wipe | One per world (+ mini at level 10) |
 
-Rules: robot reaching the herd removes `bite` animals then explodes; health bar appears once damaged; optional bite number ("show bite" setting); death = springs/bolts/cogs burst, cogs fly to the Scrap counter; some robots carry cages (§5.9).
+Formation (§1.4): grunts (Bolt Walkers, later Shield Bots) arrive as packed hordes — blocks up to ~9 wide at 0.95 m spacing, rolling slowly as one mass; Buzz Drones stay loose swarms. Rules: robot reaching the herd removes `bite` animals then explodes; health bar appears once damaged; optional bite number ("show bite" setting); death = springs/bolts/cogs burst, cogs fly to the Scrap counter; some robots carry cages (§5.9).
 
 ### 5.7 Bosses
 | World | Boss | Mechanic to build |

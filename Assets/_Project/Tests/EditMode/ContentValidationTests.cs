@@ -65,8 +65,10 @@ namespace FarmFuryRampage.Tests
                 if (wave.count < 1) errors.Add($"wave {w} count {wave.count}");
                 float last = wave.distance + (wave.count - 1) * wave.spacing;
                 if (wave.distance <= 0f || last >= level.length) errors.Add($"wave {w} spans {wave.distance}..{last} m, outside 0..{level.length}");
-                if (wave.x - wave.xJitter < -halfWidth || wave.x + wave.xJitter > halfWidth)
-                    errors.Add($"wave {w} x {wave.x} +/- {wave.xJitter} leaves the track (+/-{halfWidth} m)");
+                if (wave.columns < 1) errors.Add($"wave {w} columns {wave.columns}");
+                float halfBlock = 0.5f * (System.Math.Max(1, wave.columns) - 1) * wave.columnSpacing + wave.xJitter;
+                if (wave.x - halfBlock < -halfWidth || wave.x + halfBlock > halfWidth)
+                    errors.Add($"wave {w} x {wave.x} +/- {halfBlock} leaves the track (+/-{halfWidth} m)");
             }
 
             Assert.IsEmpty(errors, $"{level.name}:\n" + string.Join("\n", errors));

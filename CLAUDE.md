@@ -11,13 +11,14 @@ Portrait mobile lane shooter ("gate runner") with a light farm-rebuilding meta. 
 
 ## Status
 
-**Phase 1 greybox built (2026-10-09): compiled, 42 edit-mode + 1 play-mode tests passing in batch mode; not yet hand-playtested.** Next: plan §13 WP 1.3 — playtest in the editor and tune `GameTuning` / level assets (G1–G7 defaults), then the 2D crowd art test (WP 1.4). Phase 2 starts only after the Prototype gate (testers replay without being asked).
+**Phase 1 greybox built (2026-10-09), revised the same day for robot hordes + Cluck's egg grenade (plan §1.4): 50 edit-mode + 1 play-mode tests passing in batch mode, and a greedy bot clears all three prototype levels; not yet hand-playtested.** Next: plan §13 WP 1.3 — playtest in the editor and tune `GameTuning` / level assets (G1–G7 defaults), then the 2D crowd art test (WP 1.4). Phase 2 starts only after the Prototype gate (testers replay without being asked).
 
 What exists:
 - `Scripts/Data` — `GameTuning`, `HeroDef`, `RobotDef`, `LevelDef` (+ `GateRowDef`, `WaveDef`) and tuning structs.
-- `Scripts/Sim` — `RunSim` (fixed 60 Hz, seeded, track coordinates): steering, herd count, phyllotaxis formation, staggered Cluck fan fire with damage scaling above the drawn cap / projectile budget, gates (+ − × ÷, shoot-to-improve with cap and cooldown, red→blue flip), Buzz Drone / Bolt Walker, bite, win at track end, fail at 0. `GateMath`, `Formation`, `RunConfigFactory`.
+- `Scripts/Sim` — `RunSim` (fixed 60 Hz, seeded, track coordinates): steering, herd count, phyllotaxis formation, staggered fire with damage scaling above the drawn cap / projectile budget; two attack patterns — `Straight` (first robot hit) and `Lob` (Cluck's egg grenade: aimed at the nearest robot with lead + scatter, explodes and damages every robot in the blast; with no robot in range it is lobbed at the +/- gate in the herd's lane); gates (+ − × ÷, shoot-to-improve with cap and cooldown, red→blue flip), Buzz Drone swarms and packed Bolt Walker **hordes** (`WaveDef.columns`), bite, win at track end, fail at 0. `GateMath`, `Formation`, `RunConfigFactory`.
 - `Scripts/Run` — greybox only: `RunBootstrap`, `GreyboxRunView` (shapes + TextMesh), `GreyboxHud` (uGUI legacy Text), `RunInputReader` (relative drag, A/D). Phase 2 replaces the view/HUD.
-- `Scripts/Editor/RampageSetup` — menu **FarmFury Rampage > Setup > Run All** (project settings, prototype content, Run scene). Content is only created when missing, so Inspector tuning is never overwritten; **Rebuild Run Scene** overwrites the scene.
+- `Scripts/Editor/RampageSetup` — menu **FarmFury Rampage > Setup > Run All** (project settings, prototype content, Run scene). Content is only created when missing, so Inspector tuning is never overwritten; **Reset Prototype Content** rewrites the hero, robots and levels from the script (in place, GUIDs kept; GameTuning untouched); **Rebuild Run Scene** overwrites the scene.
+- Design changes from the GDD are listed in plan §1.4 (owner decisions): robot hordes, Cluck's egg grenade.
 - Content: `ScriptableObjects/Tuning/GameTuning`, `Heroes/Hero_Cluck`, `Robots/Robot_BuzzDrone`, `Robot_BoltWalker`, `Levels/Level_Proto01..03`. Scene: `Scenes/Run.unity` (only scene in the build).
 - The project was created from Hub's **Universal 3D** template; it was converted to the URP **2D** renderer (`Settings/UniversalRP` + `Renderer2D`, copied from Arcade's untouched template versions) and the 3D template assets removed.
 
@@ -43,7 +44,7 @@ Play: open `Assets/_Project/Scenes/Run.unity`, set the Game view to a portrait p
 
 ## Rules that must always hold
 
-- **Hero balance:** all heroes deal 10 DPS per animal; the balance test (herd of 20 vs 5 reference waves) must keep every hero's time-to-clear within ±5%. Upgrades live on the shared Herd Level; skins are cosmetic only.
+- **Hero balance:** all heroes deal 10 single-target DPS per animal; the balance test (herd of 20 vs 5 reference waves, which must include hordes) must keep every hero's time-to-clear within ±5%. Cluck's blast makes him far stronger against hordes, so the other heroes are balanced on time-to-clear, not DPS (plan §1.4). Upgrades live on the shared Herd Level; skins are cosmetic only.
 - **LevelDef validation:** an edit-mode test fails if any gate, spawn, pickup or hazard is outside track bounds (FarmFury's levels 2–6 broke on a coordinate bug).
 - **Every player is child-directed:** set LevelPlay `is_child_directed` and `is_deviceid_optout` metadata before `Init()`, plus the dashboard toggle. Arithmetic parental gate before every purchase.
 - Celebration videos are rendered with the background baked in — no chroma key.
@@ -58,7 +59,7 @@ Unity.exe -batchmode -nographics -projectPath . -executeMethod FarmFuryRampage.E
 ```
 Write results/logs outside the repo (or delete them). Run both test platforms before each commit. One feature per commit.
 
-Tests: `GateMathTests`, `FormationTests`, `RunSimTests` (incl. determinism and herd DPS = herd x hero DPS for 5..300 animals), `ContentValidationTests` (every LevelDef inside track bounds and level length; every HeroDef at the DPS target ±5%), `RunSceneSmokeTests` (play mode, fails on any logged error).
+Tests: `GateMathTests`, `FormationTests`, `RunSimTests` (incl. determinism and herd DPS = herd x hero DPS for 5..300 animals), `ContentValidationTests` (every LevelDef, incl. horde width, inside track bounds and level length; every HeroDef at the DPS target ±5%), `LobAndHordeTests` (blast radius, lead, gate lobbing, horde expansion), `LevelClearabilityTests` (greedy bot must win every level — run it after changing levels or tuning), `RunSceneSmokeTests` (play mode, fails on any logged error).
 
 ## Working with this repo
 

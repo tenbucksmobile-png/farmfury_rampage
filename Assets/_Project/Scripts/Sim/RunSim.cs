@@ -11,14 +11,21 @@ namespace FarmFuryRampage.Sim
     /// </summary>
     public sealed class RunSim
     {
+        /// <summary>Fractional part of the golden ratio; spreads shot timings evenly for any number of animals.</summary>
+        const float GoldenRatioFraction = 0.618034f;
+        /// <summary>A held egg rejoins the rhythm between this fraction of the fire interval and a full interval.</summary>
+        const float HeldRestaggerMin = 0.25f;
+
         readonly RunConfig config;
         readonly float tickSeconds;
         readonly Robot[] robots;
         readonly Projectile[] projectiles;
         readonly GateRowState[] gateRows;
         readonly float[] emitterTimers;
+        readonly bool[] emitterHolding;
         readonly List<RunEvent> events = new(64);
 
+        Random random;
         int nextSpawn;
         int nextRow;
         int projectileCursor;
@@ -48,6 +55,7 @@ namespace FarmFuryRampage.Sim
         {
             this.config = config;
             tickSeconds = config.TickSeconds;
+            random = new Random(config.seed == 0 ? 1u : config.seed);
 
             robots = new Robot[math.max(1, config.spawns.Length)];
             projectiles = new Projectile[math.max(1, config.combat.projectileCap)];
@@ -61,10 +69,12 @@ namespace FarmFuryRampage.Sim
                 gateRows[r] = new GateRowState { distance = row.distance, panels = panels };
             }
 
-            // Stagger the animals' shots so the herd fires a steady stream rather than volleys.
+            // Stagger the animals' shots with golden-ratio offsets, so any herd size fires a steady stream
+            // rather than volleys.
             emitterTimers = new float[math.max(1, config.herd.drawnCap)];
+            emitterHolding = new bool[emitterTimers.Length];
             for (int i = 0; i < emitterTimers.Length; i++)
-                emitterTimers[i] = config.hero.fireInterval * i / emitterTimers.Length;
+                emitterTimers[i] = config.hero.fireInterval * math.frac(i * GoldenRatioFraction);
 
             HerdCount = math.clamp(config.startingHerd, 0, config.herd.cap);
             PeakHerd = HerdCount;
@@ -134,11 +144,13 @@ namespace FarmFuryRampage.Sim
         void Fire()
         {
             HeroStats hero = config.hero;
-            if (HerdCount <= 0 || hero.fireInterval <= 0f || hero.projectileSpeed <= 0f) return;
+            if (HerdCount <= 0 || hero.fireInterval <= 0f) return;
+            bool lob = hero.pattern == AttackPattern.Lob;
+            float lifetime = lob ? hero.flightTime : hero.projectileSpeed > 0f ? hero.range / hero.projectileSpeed : 0f;
+            if (lifetime <= 0f) return;
 
             // Above the drawn cap, or when the projectile budget is tight, fewer emitters fire and each shot
             // carries more damage, so herd DPS stays exactly HerdCount x hero DPS.
-            float lifetime = hero.range / hero.projectileSpeed;
             int perShot = math.max(1, hero.projectilesPerShot);
             int budgetEmitters = (int)math.floor(projectiles.Length * hero.fireInterval / (perShot * lifetime));
             int emitters = math.max(1, math.min(DrawnCount, budgetEmitters));
@@ -149,9 +161,30 @@ namespace FarmFuryRampage.Sim
             {
                 emitterTimers[i] -= tickSeconds;
                 if (emitterTimers[i] > 0f) continue;
-                emitterTimers[i] += hero.fireInterval;
 
                 float2 origin = new float2(HerdX, HerdDistance) + Formation.SlotOffset(i, config.herd.slotSpacing);
+                if (lob)
+                {
+                    // Hold the egg until there is something to throw at, then rejoin the rhythm at a random point
+                    // so a herd that was waiting doesn't keep throwing in one synchronised volley.
+                    if (!FindLobTarget(origin, out float2 target))
+                    {
+                        emitterTimers[i] = 0f;
+                        emitterHolding[i] = true;
+                        continue;
+                    }
+                    SpawnLob(origin, target, damage);
+                    for (int k = 1; k < perShot; k++)
+                        if (FindLobTarget(origin, out target)) SpawnLob(origin, target, damage);
+                    emitterTimers[i] = emitterHolding[i]
+                        ? hero.fireInterval * random.NextFloat(HeldRestaggerMin, 1f)
+                        : emitterTimers[i] + hero.fireInterval;
+                    emitterHolding[i] = false;
+                    continue;
+                }
+
+                emitterTimers[i] += hero.fireInterval;
+
                 for (int k = 0; k < perShot; k++)
                 {
                     float angle = perShot == 1 ? 0f : spread * ((float)k / (perShot - 1) - 0.5f);
@@ -183,6 +216,122 @@ namespace FarmFuryRampage.Sim
             }
         }
 
+        /// <summary>
+        /// Lob aim: the nearest robot ahead within range, led by the flight time, plus random scatter so a herd's
+        /// throws spread across a horde. With no robot in range, the +/- gate panel in the thrower's lane (to shoot
+        /// it up). Returns false when there is nothing worth throwing at.
+        /// </summary>
+        bool FindLobTarget(float2 origin, out float2 target)
+        {
+            HeroStats hero = config.hero;
+            float bestSq = hero.range * hero.range;
+            int best = -1;
+            for (int r = 0; r < nextSpawn; r++)
+            {
+                Robot robot = robots[r];
+                if (!robot.active || robot.distance <= origin.y) continue;
+                float dx = robot.x - origin.x;
+                float dd = robot.distance - origin.y;
+                float sq = dx * dx + dd * dd;
+                if (sq >= bestSq) continue;
+                bestSq = sq;
+                best = r;
+            }
+
+            if (best >= 0)
+            {
+                Robot robot = robots[best];
+                float lead = config.robotTypes[robot.type].speed * hero.flightTime;
+                target = new float2(robot.x, robot.distance - lead);
+            }
+            else if (!FindGateTarget(origin, out target))
+            {
+                return false;
+            }
+
+            if (hero.scatter > 0f) target += random.NextFloat2Direction() * random.NextFloat(0f, hero.scatter);
+            target.x = math.clamp(target.x, -config.HalfWidth, config.HalfWidth);
+            target.y = math.max(target.y, origin.y);
+            return true;
+        }
+
+        bool FindGateTarget(float2 origin, out float2 target)
+        {
+            target = default;
+            for (int r = nextRow; r < gateRows.Length; r++)
+            {
+                GateRowState row = gateRows[r];
+                if (row.distance <= origin.y) continue;
+                if (row.distance - origin.y > config.hero.range) return false;
+                int panel = GateMath.PanelIndex(origin.x, row.panels.Length, config.track.width);
+                if (!GateMath.IsImprovable(row.panels[panel].kind)) return false;
+                target = new float2(origin.x, row.distance);
+                return true;
+            }
+            return false;
+        }
+
+        void SpawnLob(float2 origin, float2 target, float damage)
+        {
+            for (int n = 0; n < projectiles.Length; n++)
+            {
+                int index = (projectileCursor + n) % projectiles.Length;
+                if (projectiles[index].active) continue;
+
+                projectiles[index] = new Projectile
+                {
+                    active = true,
+                    lob = true,
+                    x = origin.x,
+                    distance = origin.y,
+                    damage = damage,
+                    startX = origin.x,
+                    startDistance = origin.y,
+                    targetX = target.x,
+                    targetDistance = target.y,
+                    flightTime = config.hero.flightTime,
+                };
+                projectileCursor = (index + 1) % projectiles.Length;
+                return;
+            }
+        }
+
+        /// <summary>Damages every robot touching the blast, and counts as a hit on a +/- gate panel under it.</summary>
+        void Explode(ref Projectile p)
+        {
+            p.active = false;
+            float blast = config.hero.blastRadius;
+            int hits = 0;
+            for (int r = 0; r < nextSpawn; r++)
+            {
+                ref Robot robot = ref robots[r];
+                if (!robot.active) continue;
+                float reach = blast + config.robotTypes[robot.type].radius;
+                float dx = robot.x - p.x;
+                float dd = robot.distance - p.distance;
+                if (dx * dx + dd * dd > reach * reach) continue;
+
+                hits++;
+                robot.hp -= p.damage;
+                if (robot.hp <= 0f) KillRobot(ref robot);
+            }
+
+            float halfDepth = config.gates.panelDepth * 0.5f;
+            for (int r = nextRow; r < gateRows.Length; r++)
+            {
+                GateRowState row = gateRows[r];
+                if (row.distance - halfDepth - blast > p.distance) break;
+                if (row.passed || math.abs(row.distance - p.distance) > halfDepth + blast) continue;
+
+                int panel = GateMath.PanelIndex(p.x, row.panels.Length, config.track.width);
+                if (GateMath.RegisterHit(ref row.panels[panel], Time, config.gates))
+                    events.Add(new RunEvent(RunEventType.GateImproved, p.x, row.distance, r, panel));
+                break;
+            }
+
+            events.Add(new RunEvent(RunEventType.Explosion, p.x, p.distance, hits));
+        }
+
         void MoveProjectiles()
         {
             float hitRadius = config.hero.projectileRadius;
@@ -192,6 +341,16 @@ namespace FarmFuryRampage.Sim
             {
                 ref Projectile p = ref projectiles[i];
                 if (!p.active) continue;
+
+                if (p.lob)
+                {
+                    p.elapsed += tickSeconds;
+                    float t = math.saturate(p.FlightFraction);
+                    p.x = math.lerp(p.startX, p.targetX, t);
+                    p.distance = math.lerp(p.startDistance, p.targetDistance, t);
+                    if (p.elapsed >= p.flightTime) Explode(ref p);
+                    continue;
+                }
 
                 p.x += p.vx * tickSeconds;
                 p.distance += p.vd * tickSeconds;

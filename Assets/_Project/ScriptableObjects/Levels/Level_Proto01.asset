@@ -13,13 +13,13 @@ MonoBehaviour:
   m_Name: Level_Proto01
   m_EditorClassIdentifier: FarmFuryRampage.Data::FarmFuryRampage.Data.LevelDef
   id: proto_01
-  displayName: "Proto 1 \xB7 First Gates"
+  displayName: "Proto 1 \xB7 First Horde"
   length: 180
   difficultyLevel: 1
   startingHerd: 5
   seed: 101
   gateRows:
-  - distance: 20
+  - distance: 18
     panels:
     - kind: 2
       value: 2
@@ -31,19 +31,19 @@ MonoBehaviour:
       value: 5
     - kind: 1
       value: 3
-  - distance: 70
+  - distance: 75
     panels:
+    - kind: 2
+      value: 2
     - kind: 0
       value: 8
-    - kind: 3
-      value: 2
-  - distance: 100
+  - distance: 105
     panels:
     - kind: 2
       value: 3
     - kind: 0
       value: 10
-  - distance: 130
+  - distance: 135
     panels:
     - kind: 1
       value: 5
@@ -51,46 +51,66 @@ MonoBehaviour:
       value: 5
     - kind: 2
       value: 2
-  - distance: 160
+  - distance: 162
     panels:
     - kind: 0
       value: 10
     - kind: 1
       value: 20
   waves:
-  - distance: 30
+  - distance: 28
+    robot: {fileID: 11400000, guid: 01529c9cc02c4d746b69ce49893955a9, type: 2}
+    x: 0
+    count: 3
+    spacing: 0.95
+    columns: 4
+    columnSpacing: 0.95
+    xJitter: 0
+  - distance: 55
     robot: {fileID: 11400000, guid: 4f7f8df6388dfe449a2d3f674bd1f7c3, type: 2}
     x: 0
-    count: 5
-    spacing: 1
-    xJitter: 2
-  - distance: 55
-    robot: {fileID: 11400000, guid: 01529c9cc02c4d746b69ce49893955a9, type: 2}
-    x: -2
-    count: 3
-    spacing: 3
-    xJitter: 0
-  - distance: 80
-    robot: {fileID: 11400000, guid: 4f7f8df6388dfe449a2d3f674bd1f7c3, type: 2}
-    x: 1
-    count: 8
+    count: 6
     spacing: 0.8
-    xJitter: 3
-  - distance: 110
+    columns: 1
+    columnSpacing: 0
+    xJitter: 2.5
+  - distance: 62
+    robot: {fileID: 11400000, guid: 01529c9cc02c4d746b69ce49893955a9, type: 2}
+    x: -1.5
+    count: 4
+    spacing: 0.95
+    columns: 4
+    columnSpacing: 0.95
+    xJitter: 0
+  - distance: 88
     robot: {fileID: 11400000, guid: 01529c9cc02c4d746b69ce49893955a9, type: 2}
     x: 1
-    count: 5
-    spacing: 2.5
-    xJitter: 1.5
-  - distance: 140
+    count: 4
+    spacing: 0.95
+    columns: 6
+    columnSpacing: 0.95
+    xJitter: 0
+  - distance: 118
     robot: {fileID: 11400000, guid: 4f7f8df6388dfe449a2d3f674bd1f7c3, type: 2}
     x: 0
     count: 10
     spacing: 0.6
+    columns: 1
+    columnSpacing: 0
     xJitter: 3.5
+  - distance: 125
+    robot: {fileID: 11400000, guid: 01529c9cc02c4d746b69ce49893955a9, type: 2}
+    x: 0
+    count: 6
+    spacing: 0.95
+    columns: 7
+    columnSpacing: 0.95
+    xJitter: 0
   - distance: 150
     robot: {fileID: 11400000, guid: 01529c9cc02c4d746b69ce49893955a9, type: 2}
     x: 0
     count: 6
-    spacing: 2
-    xJitter: 3
+    spacing: 0.95
+    columns: 8
+    columnSpacing: 0.95
+    xJitter: 0

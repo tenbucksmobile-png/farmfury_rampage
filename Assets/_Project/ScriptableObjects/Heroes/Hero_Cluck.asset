@@ -15,11 +15,16 @@ MonoBehaviour:
   id: cluck
   displayName: Cluck
   stats:
-    fireInterval: 0.6
-    projectilesPerShot: 3
-    spreadDegrees: 30
-    damagePerHit: 2
-    range: 12
-    projectileSpeed: 14
-    projectileRadius: 0.12
+    pattern: 1
+    fireInterval: 1.2
+    projectilesPerShot: 1
+    spreadDegrees: 0
+    damagePerHit: 12
+    range: 11
+    projectileSpeed: 0
+    projectileRadius: 0
+    blastRadius: 1.5
+    flightTime: 0.7
+    scatter: 0.6
+    arcHeight: 2.5
   greyboxColor: {r: 1, g: 0.92, b: 0.55, a: 1}

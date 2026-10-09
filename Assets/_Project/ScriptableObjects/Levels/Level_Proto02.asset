@@ -62,35 +62,63 @@ MonoBehaviour:
     robot: {fileID: 11400000, guid: 01529c9cc02c4d746b69ce49893955a9, type: 2}
     x: 0
     count: 3
-    spacing: 2.5
-    xJitter: 1
-  - distance: 60
+    spacing: 0.95
+    columns: 5
+    columnSpacing: 0.95
+    xJitter: 0
+  - distance: 58
     robot: {fileID: 11400000, guid: 4f7f8df6388dfe449a2d3f674bd1f7c3, type: 2}
     x: -1
     count: 8
     spacing: 0.7
+    columns: 1
+    columnSpacing: 0
     xJitter: 3
-  - distance: 90
+  - distance: 66
     robot: {fileID: 11400000, guid: 01529c9cc02c4d746b69ce49893955a9, type: 2}
-    x: 2
+    x: -1
     count: 5
-    spacing: 2
-    xJitter: 1
-  - distance: 120
+    spacing: 0.95
+    columns: 5
+    columnSpacing: 0.95
+    xJitter: 0
+  - distance: 92
+    robot: {fileID: 11400000, guid: 01529c9cc02c4d746b69ce49893955a9, type: 2}
+    x: 0
+    count: 5
+    spacing: 0.95
+    columns: 7
+    columnSpacing: 0.95
+    xJitter: 0
+  - distance: 122
     robot: {fileID: 11400000, guid: 4f7f8df6388dfe449a2d3f674bd1f7c3, type: 2}
     x: 0
     count: 12
     spacing: 0.5
+    columns: 1
+    columnSpacing: 0
     xJitter: 3.5
-  - distance: 155
+  - distance: 130
     robot: {fileID: 11400000, guid: 01529c9cc02c4d746b69ce49893955a9, type: 2}
-    x: -1
-    count: 8
-    spacing: 1.6
-    xJitter: 2.5
-  - distance: 185
-    robot: {fileID: 11400000, guid: 4f7f8df6388dfe449a2d3f674bd1f7c3, type: 2}
     x: 0
-    count: 14
-    spacing: 0.5
-    xJitter: 3.5
+    count: 7
+    spacing: 0.95
+    columns: 7
+    columnSpacing: 0.95
+    xJitter: 0
+  - distance: 160
+    robot: {fileID: 11400000, guid: 01529c9cc02c4d746b69ce49893955a9, type: 2}
+    x: 0
+    count: 8
+    spacing: 0.95
+    columns: 8
+    columnSpacing: 0.95
+    xJitter: 0
+  - distance: 188
+    robot: {fileID: 11400000, guid: 01529c9cc02c4d746b69ce49893955a9, type: 2}
+    x: 0
+    count: 8
+    spacing: 0.95
+    columns: 9
+    columnSpacing: 0.95
+    xJitter: 0

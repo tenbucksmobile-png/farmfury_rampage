@@ -13,18 +13,26 @@ namespace FarmFuryRampage.Data
         public GatePanelDef[] panels = Array.Empty<GatePanelDef>();
     }
 
-    /// <summary>A group of one robot type, laid out along the track.</summary>
+    /// <summary>
+    /// A group of one robot type: a block <see cref="columns"/> wide and <see cref="count"/> rows deep. One column is
+    /// a single-file line; several columns make a tightly packed horde that rolls toward the herd as one mass.
+    /// </summary>
     [Serializable]
     public sealed class WaveDef
     {
-        [Tooltip("Distance along the track of the first robot, in metres.")]
+        [Tooltip("Distance along the track of the front row, in metres.")]
         public float distance;
         public RobotDef robot;
         [Tooltip("Track X of the group centre in metres (0 = middle).")]
         public float x;
-        [Min(1)] public int count = 1;
-        [Tooltip("Metres between robots along the track.")]
+        [Min(1), Tooltip("Rows (robots per column).")]
+        public int count = 1;
+        [Tooltip("Metres between rows along the track.")]
         public float spacing;
+        [Min(1), Tooltip("Robots side by side in each row.")]
+        public int columns = 1;
+        [Tooltip("Metres between columns across the track.")]
+        public float columnSpacing;
         [Tooltip("Random sideways offset (+/- metres) per robot, from the level seed.")]
         public float xJitter;
     }

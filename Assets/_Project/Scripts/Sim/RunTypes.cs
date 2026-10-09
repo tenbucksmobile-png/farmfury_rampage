@@ -26,15 +26,29 @@ namespace FarmFuryRampage.Sim
         public float maxHp;
     }
 
+    /// <summary>
+    /// A shot in flight. Straight shots move by (vx, vd) and hit the first robot. Lobbed shots travel from start to
+    /// target over <see cref="flightTime"/> (x/distance are the ground position under the arc) and explode on landing.
+    /// </summary>
     public struct Projectile
     {
         public bool active;
+        public bool lob;
         public float x;
         public float distance;
         public float vx;
         public float vd;
         public float damage;
         public float lifetime;
+        public float startX;
+        public float startDistance;
+        public float targetX;
+        public float targetDistance;
+        public float elapsed;
+        public float flightTime;
+
+        /// <summary>0 at the throw, 1 at the explosion (lobs only).</summary>
+        public float FlightFraction => flightTime > 0f ? elapsed / flightTime : 1f;
     }
 
     public sealed class GateRowState
@@ -51,6 +65,7 @@ namespace FarmFuryRampage.Sim
         GateImproved,
         RobotKilled,
         AnimalsLost,
+        Explosion,
         Won,
         Failed,
     }
@@ -58,7 +73,7 @@ namespace FarmFuryRampage.Sim
     /// <summary>
     /// Something that happened during a tick, for the presentation layer (VFX, sound, haptics, analytics).
     /// <c>a</c>/<c>b</c> meaning depends on the type: GatePassed = herd before/after; GateImproved = row/panel;
-    /// RobotKilled = robot type/scrap; AnimalsLost = animals lost/herd after.
+    /// RobotKilled = robot type/scrap; AnimalsLost = animals lost/herd after; Explosion = robots hit.
     /// </summary>
     public readonly struct RunEvent
     {

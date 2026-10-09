@@ -8,4 +8,13 @@ namespace FarmFuryRampage.Data
         Multiply,
         Divide,
     }
+
+    /// <summary>How a hero's shots travel.</summary>
+    public enum AttackPattern
+    {
+        /// <summary>Flies straight and hits the first robot it touches.</summary>
+        Straight,
+        /// <summary>Thrown in an arc at a target, then explodes and damages every robot in the blast radius (Cluck's egg grenade).</summary>
+        Lob,
+    }
 }
