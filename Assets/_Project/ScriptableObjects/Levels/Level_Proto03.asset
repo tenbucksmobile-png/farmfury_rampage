@@ -15,7 +15,7 @@ MonoBehaviour:
   id: proto_03
   displayName: "Proto 3 \xB7 The Swarm"
   length: 240
-  difficultyLevel: 3
+  difficultyLevel: 2
   startingHerd: 5
   seed: 303
   gateRows:
@@ -127,7 +127,9 @@ MonoBehaviour:
     endDistance: 230
     robot: {fileID: 11400000, guid: 01529c9cc02c4d746b69ce49893955a9, type: 2}
     x: 0
-    columnsStart: 2
+    columnsStart: 6
     columnsEnd: 6
-    rowSpacing: 2
+    rowSpacing: 0.95
     columnSpacing: 0.95
+    hpMultiplierEnd: 16
+    hpRampStart: 0.5

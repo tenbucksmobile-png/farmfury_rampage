@@ -16,7 +16,7 @@ MonoBehaviour:
   displayName: Bolt Walker
   tier: 1
   stats:
-    hp: 20
+    hp: 10
     speed: 1.2
     bite: 2
     radius: 0.42

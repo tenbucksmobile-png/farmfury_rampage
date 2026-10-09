@@ -39,7 +39,8 @@ namespace FarmFuryRampage.Data
 
     /// <summary>
     /// An unbroken, tightly packed horde from <see cref="startDistance"/> to <see cref="endDistance"/>: a row every
-    /// <see cref="rowSpacing"/> metres, widening from <see cref="columnsStart"/> to <see cref="columnsEnd"/> robots.
+    /// <see cref="rowSpacing"/> metres, from <see cref="columnsStart"/> to <see cref="columnsEnd"/> robots wide, its
+    /// robots' HP ramping up to <see cref="hpMultiplierEnd"/> along the way.
     /// Bigger robots (elites, bosses) placed inside it clear their own space in the pack.
     /// </summary>
     [Serializable]
@@ -56,6 +57,10 @@ namespace FarmFuryRampage.Data
         public float rowSpacing = 1f;
         [Tooltip("Metres between robots across the track.")]
         public float columnSpacing = 1f;
+        [Min(1f), Tooltip("Robot HP multiplier at the end of the stream. Keeps a constant horde a match for a herd that grows through the gates.")]
+        public float hpMultiplierEnd = 1f;
+        [Range(0f, 1f), Tooltip("Fraction of the stream at 1x HP before the ramp starts, so a small early herd isn't overwhelmed.")]
+        public float hpRampStart;
     }
 
     /// <summary>

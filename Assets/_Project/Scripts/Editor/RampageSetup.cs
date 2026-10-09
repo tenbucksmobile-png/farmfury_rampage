@@ -95,7 +95,7 @@ namespace FarmFuryRampage.Editor
                 t.tickRate = 60;
                 t.track = new TrackTuning
                 {
-                    width = 9f, pace = 2.5f, viewWidth = 10f, herdScreenY = 0.3f, spawnAhead = 16f, despawnBehind = 8f,
+                    width = 9f, pace = 2f, viewWidth = 10f, herdScreenY = 0.3f, spawnAhead = 16f, despawnBehind = 8f,
                 };
                 t.herd = new HerdTuning
                 {
@@ -132,15 +132,16 @@ namespace FarmFuryRampage.Editor
                 r.stats = new RobotStats { hp = 20f, speed = 3f, bite = 1, radius = 0.3f, homing = 0.6f, scrap = 1 };
             });
 
-            // The horde grunt: slow, packed shoulder to shoulder, rolls straight at the herd. Low HP so an egg
-            // blast demolishes a chunk of the horde (GDD's 60 HP was for single shots).
+            // The horde grunt: slow, packed shoulder to shoulder, rolls straight at the herd. 10 HP so one egg blast
+            // demolishes a chunk of the horde (GDD's 60 HP was for single shots); the stream's armour ramp toughens
+            // it later in the level.
             RobotDef walker = CreateOrUpdate<RobotDef>(ContentRoot + "/Robots/Robot_BoltWalker.asset", overwrite, r =>
             {
                 r.id = "bolt_walker";
                 r.displayName = "Bolt Walker";
                 r.tier = 1;
                 r.greyboxColor = new Color(0.45f, 0.48f, 0.55f);
-                r.stats = new RobotStats { hp = 20f, speed = 1.2f, bite = 2, radius = 0.42f, homing = 0f, scrap = 2 };
+                r.stats = new RobotStats { hp = 10f, speed = 1.2f, bite = 2, radius = 0.42f, homing = 0f, scrap = 2 };
             });
 
             // Boss robot inside the horde: a heavy tank that takes sustained fire. Blasts on the pack around it
@@ -151,11 +152,12 @@ namespace FarmFuryRampage.Editor
                 r.displayName = "Tiller Tank";
                 r.tier = 3;
                 r.greyboxColor = new Color(0.85f, 0.45f, 0.15f);
-                r.stats = new RobotStats { hp = 600f, speed = 1f, bite = 8, radius = 1.1f, homing = 0f, scrap = 25 };
+                r.stats = new RobotStats { hp = 900f, speed = 1f, bite = 8, radius = 1.1f, homing = 0f, scrap = 25 };
             });
 
-            // Every level: one constant horde from start to finish that widens as it goes, with Tiller Tanks
-            // embedded in it and the odd drone swarm on top.
+            // Every level: one gap-free horde from start to finish at a constant width. It stays at 1x HP while the
+            // herd grows, then its armour ramps up so it stays a match for a big herd. Tiller Tanks are embedded in
+            // it and drone swarms come over the top.
             CreateOrUpdate<LevelDef>(ContentRoot + "/Levels/Level_Proto01.asset", overwrite, l =>
             {
                 Level(l, "proto_01", "Proto 1 · The Horde", 180f, 1, 5, 101);
@@ -165,7 +167,7 @@ namespace FarmFuryRampage.Editor
                 Row(l, 105f, Mul(3), Add(10));
                 Row(l, 135f, Sub(5), Add(5), Mul(2));
                 Row(l, 162f, Add(10), Sub(20));
-                Stream(l, 25f, 170f, walker, 2, 6, 2.5f);
+                Stream(l, 25f, 170f, walker, 5, 0.4f, 8f);
                 Elite(l, 70f, tank, 0f);
                 Elite(l, 130f, tank, -1.5f);
                 Wave(l, 60f, drone, 0f, 6, 0.8f, 2.5f);
@@ -181,7 +183,7 @@ namespace FarmFuryRampage.Editor
                 Row(l, 105f, Div(2), Mul(2));
                 Row(l, 140f, Sub(6), Add(6), Sub(2));
                 Row(l, 175f, Mul(2), Add(15));
-                Stream(l, 25f, 200f, walker, 2, 7, 2f);
+                Stream(l, 25f, 200f, walker, 6, 0.5f, 7f);
                 Elite(l, 80f, tank, 1f);
                 Elite(l, 140f, tank, -1f);
                 Elite(l, 180f, tank, 0f);
@@ -190,7 +192,7 @@ namespace FarmFuryRampage.Editor
 
             CreateOrUpdate<LevelDef>(ContentRoot + "/Levels/Level_Proto03.asset", overwrite, l =>
             {
-                Level(l, "proto_03", "Proto 3 · The Swarm", 240f, 3, 5, 303);
+                Level(l, "proto_03", "Proto 3 · The Swarm", 240f, 2, 5, 303);
                 Row(l, 18f, Mul(2), Add(4));
                 Row(l, 45f, Add(6), Mul(2));
                 Row(l, 75f, Sub(4), Mul(3), Sub(10));
@@ -198,7 +200,7 @@ namespace FarmFuryRampage.Editor
                 Row(l, 140f, Mul(2), Add(20));
                 Row(l, 175f, Sub(15), Add(10));
                 Row(l, 210f, Mul(2), Sub(5), Add(25));
-                Stream(l, 25f, 230f, walker, 2, 6, 2f);
+                Stream(l, 25f, 230f, walker, 6, 0.5f, 16f);
                 Elite(l, 70f, tank, 0f);
                 Elite(l, 120f, tank, 1.5f);
                 Elite(l, 170f, tank, -1.5f);
@@ -280,12 +282,16 @@ namespace FarmFuryRampage.Editor
         static void Wave(LevelDef l, float distance, RobotDef robot, float x, int count, float spacing, float xJitter) =>
             l.waves.Add(new WaveDef { distance = distance, robot = robot, x = x, count = count, spacing = spacing, xJitter = xJitter });
 
-        /// <summary>A constant packed horde from start to end, a row every rowSpacing metres, widening from columnsStart to columnsEnd robots.</summary>
-        static void Stream(LevelDef l, float start, float end, RobotDef robot, int columnsStart, int columnsEnd, float rowSpacing) =>
+        /// <summary>
+        /// A gap-free packed horde from start to end, <paramref name="columns"/> wide. HP stays 1x for the first
+        /// <paramref name="rampStart"/> of it, then ramps to <paramref name="hpEnd"/>x at the end.
+        /// </summary>
+        static void Stream(LevelDef l, float start, float end, RobotDef robot, int columns, float rampStart, float hpEnd) =>
             l.hordeStreams.Add(new HordeStreamDef
             {
                 startDistance = start, endDistance = end, robot = robot, x = 0f,
-                columnsStart = columnsStart, columnsEnd = columnsEnd, rowSpacing = rowSpacing, columnSpacing = HordeSpacing,
+                columnsStart = columns, columnsEnd = columns, rowSpacing = HordeSpacing, columnSpacing = HordeSpacing,
+                hpRampStart = rampStart, hpMultiplierEnd = hpEnd,
             });
 
         /// <summary>A single heavy robot; placed inside a horde stream it clears its own space in the pack.</summary>

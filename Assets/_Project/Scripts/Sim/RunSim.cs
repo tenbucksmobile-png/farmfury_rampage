@@ -130,7 +130,8 @@ namespace FarmFuryRampage.Sim
             while (nextSpawn < config.spawns.Length && config.spawns[nextSpawn].distance <= horizon)
             {
                 SpawnConfig spawn = config.spawns[nextSpawn];
-                float hp = config.robotTypes[spawn.robotType].hp * hpScale;
+                float spawnScale = spawn.hpScale > 0f ? spawn.hpScale : 1f;
+                float hp = config.robotTypes[spawn.robotType].hp * hpScale * spawnScale;
                 robots[nextSpawn] = new Robot
                 {
                     active = true,

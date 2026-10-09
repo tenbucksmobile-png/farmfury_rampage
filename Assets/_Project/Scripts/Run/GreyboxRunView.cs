@@ -31,6 +31,9 @@ namespace FarmFuryRampage.Run
         static readonly Color PassedGate = new(0.5f, 0.5f, 0.5f, 0.25f);
         static readonly Color ProjectileColor = new(1f, 0.97f, 0.80f);
         static readonly Color BlastColor = new(1f, 0.75f, 0.25f, 0.85f);
+        static readonly Color ArmouredColor = new(0.55f, 0.08f, 0.08f);
+        /// <summary>HP multiple at which an armoured robot shows the full armoured tint.</summary>
+        const float FullArmourTint = 16f;
         const float StripeSpacing = 5f;
         const float EdgeWidth = 0.25f;
         const float ProjectileSize = 0.25f;
@@ -212,7 +215,10 @@ namespace FarmFuryRampage.Run
                 float size = config.robotTypes[robot.type].radius * 2f;
                 float y = robot.distance - sim.HerdDistance;
                 body.enabled = true;
-                body.color = robotTypes[robot.type].greyboxColor;
+                // Armoured robots (horde HP ramp) shade toward dark red so tougher stretches read at a glance.
+                float baseHp = config.robotTypes[robot.type].hp * config.RobotHpScale;
+                float armour = baseHp > 0f ? math.saturate(math.log2(math.max(1f, robot.maxHp / baseHp)) / math.log2(FullArmourTint)) : 0f;
+                body.color = Color.Lerp(robotTypes[robot.type].greyboxColor, ArmouredColor, armour);
                 Place(body, robot.x, y, size, size);
 
                 bool damaged = robot.hp < robot.maxHp;

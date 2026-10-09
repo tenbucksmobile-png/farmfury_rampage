@@ -77,6 +77,8 @@ namespace FarmFuryRampage.Tests
                 if (stream.robot == null) errors.Add($"horde stream {h} has no robot");
                 if (stream.rowSpacing <= 0f) errors.Add($"horde stream {h} rowSpacing must be > 0");
                 if (stream.columnsStart < 1 || stream.columnsEnd < 1) errors.Add($"horde stream {h} needs at least 1 column");
+                if (stream.hpMultiplierEnd < 1f) errors.Add($"horde stream {h} hpMultiplierEnd {stream.hpMultiplierEnd} < 1");
+                if (stream.hpRampStart < 0f || stream.hpRampStart > 1f) errors.Add($"horde stream {h} hpRampStart {stream.hpRampStart} outside 0..1");
                 if (stream.startDistance <= 0f || stream.endDistance >= level.length || stream.endDistance < stream.startDistance)
                     errors.Add($"horde stream {h} spans {stream.startDistance}..{stream.endDistance} m, outside 0..{level.length}");
                 int widest = System.Math.Max(stream.columnsStart, stream.columnsEnd);

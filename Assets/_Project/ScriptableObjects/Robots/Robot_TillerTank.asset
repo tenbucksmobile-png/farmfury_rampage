@@ -16,7 +16,7 @@ MonoBehaviour:
   displayName: Tiller Tank
   tier: 3
   stats:
-    hp: 600
+    hp: 900
     speed: 1
     bite: 8
     radius: 1.1

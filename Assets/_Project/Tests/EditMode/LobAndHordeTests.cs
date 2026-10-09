@@ -152,6 +152,39 @@ namespace FarmFuryRampage.Tests
         }
 
         [Test]
+        public void HordeStream_ArmourStaysFlatThenRampsToTheEnd()
+        {
+            var tuning = ScriptableObject.CreateInstance<GameTuning>();
+            tuning.track.width = 9f;
+            var hero = ScriptableObject.CreateInstance<HeroDef>();
+            var walker = ScriptableObject.CreateInstance<RobotDef>();
+            var level = ScriptableObject.CreateInstance<LevelDef>();
+            level.length = 100f;
+            level.hordeStreams = new List<HordeStreamDef>
+            {
+                new() { startDistance = 10f, endDistance = 30f, robot = walker, columnsStart = 1, columnsEnd = 1, rowSpacing = 1f, columnSpacing = 1f, hpRampStart = 0.5f, hpMultiplierEnd = 4f },
+            };
+
+            try
+            {
+                RunConfig config = RunConfigFactory.Create(tuning, hero, level, out _);
+                foreach (SpawnConfig s in config.spawns)
+                {
+                    float t = (s.distance - 10f) / 20f;
+                    float expected = t <= 0.5f ? 1f : 1f + 3f * (t - 0.5f) / 0.5f;
+                    Assert.AreEqual(expected, s.hpScale, 1e-4f, $"row at {s.distance} m");
+                }
+            }
+            finally
+            {
+                Object.DestroyImmediate(tuning);
+                Object.DestroyImmediate(hero);
+                Object.DestroyImmediate(walker);
+                Object.DestroyImmediate(level);
+            }
+        }
+
+        [Test]
         public void BossRobotInsideTheHorde_ClearsItsOwnSpace()
         {
             var tuning = ScriptableObject.CreateInstance<GameTuning>();

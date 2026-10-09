@@ -18,6 +18,8 @@ namespace FarmFuryRampage.Sim
         public int robotType;
         public float x;
         public float distance;
+        /// <summary>HP multiplier for this robot on top of the level difficulty (0 is treated as 1).</summary>
+        public float hpScale;
     }
 
     /// <summary>
@@ -78,6 +80,7 @@ namespace FarmFuryRampage.Sim
                         robotType = type,
                         x = math.clamp(wave.x + firstColumn + c * wave.columnSpacing + jitter, -halfWidth, halfWidth),
                         distance = wave.distance + i * wave.spacing,
+                        hpScale = 1f,
                     });
                 }
             }
@@ -92,6 +95,9 @@ namespace FarmFuryRampage.Sim
                 {
                     float t = rowCount > 1 ? (float)i / (rowCount - 1) : 0f;
                     int columns = math.max(1, (int)math.round(math.lerp(stream.columnsStart, stream.columnsEnd, t)));
+                    float rampStart = math.saturate(stream.hpRampStart);
+                    float ramp = rampStart < 1f ? math.saturate((t - rampStart) / (1f - rampStart)) : 0f;
+                    float hpScale = math.lerp(1f, math.max(1f, stream.hpMultiplierEnd), ramp);
                     float firstColumn = -0.5f * (columns - 1) * stream.columnSpacing;
                     for (int c = 0; c < columns; c++)
                     {
@@ -100,6 +106,7 @@ namespace FarmFuryRampage.Sim
                             robotType = type,
                             x = math.clamp(stream.x + firstColumn + c * stream.columnSpacing, -halfWidth, halfWidth),
                             distance = stream.startDistance + i * stream.rowSpacing,
+                            hpScale = hpScale,
                         });
                     }
                 }
