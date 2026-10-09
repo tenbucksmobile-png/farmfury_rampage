@@ -24,7 +24,7 @@ robots roll **down** toward them (we see robots from the **front**). Look: warm 
 Priority: Cluck + egg → Bolt Walker → ground → blast → Tiller Tank → Buzz Drone → gates.
 
 Already usable from existing FarmFury art: `FarmFury_Artwork/Rough_Effects/Explosion.png` (rename to `Effects/blast.png`).
-The platformer character and robot art is side-on, so it needs new back/front views for Rampage.
+Most platformer character and robot art is side-on, but `Rough_Characters/Cluck/Cluck_back.png` (and `Cluck_front.png`) are the right angles: use them as the Kling reference image for Cluck. `Rough_Characters/Robot/DriftRobot_Front.png` shows the treaded-robot idea from the front.
 
 Per-asset tuning (Inspector): `HeroDef.artScale` / `frameRate`, `RobotDef.artScale` / `frameRate`.
 
