@@ -11,7 +11,7 @@ Portrait mobile lane shooter ("gate runner") with a light farm-rebuilding meta. 
 
 ## Status
 
-Planning only (2026-10-09). No Unity project yet. Next: Phase 1 (plan §13) — create the Unity 6000.5.6f1 Universal 2D project **in this folder**, then the greybox `RunSim`.
+2026-10-09: empty Unity 6000.5.6f1 Universal 2D project at the repo root (template files only, no game code). Next: rest of Phase 1 (plan §13) — packages, `_Project` folders/asmdefs, portrait/Linear settings, then the greybox `RunSim`.
 
 ## Stack
 

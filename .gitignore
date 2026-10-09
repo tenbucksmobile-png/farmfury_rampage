@@ -69,3 +69,15 @@ crashlytics-build.properties
 .DS_Store
 Thumbs.db
 ~$*
+
+# Extras from Unity Hub's template .gitignore
+*.log
+mono_crash.*
+.gradle/
+*.DotSettings.user
+*.unitypackage.meta
+/ServerData
+/[Aa]ssets/AddressableAssetsData/link.xml*
+/[Aa]ssets/Addressables_Temp*
+/[Aa]ssets/Plugins/Editor/JetBrains*
+/[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*

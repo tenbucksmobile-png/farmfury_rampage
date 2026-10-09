@@ -96,7 +96,7 @@ One deliberate difference: the line uses manager singletons (`GameManager`, `Sav
 2. ✅ `Desktop/FarmFury_Rampage/` added to the **home repo's** `.gitignore` so the nested repo is never added as a gitlink.
 3. ✅ Unity `.gitignore` (merged from Arcade + Stampede, plus keystores/keys never committed). **No Git LFS**, like the rest of the line (the GDD suggested LFS; Arcade/Stampede ship without it and Unity Build Automation pulls plain git). Keep each file under GitHub's 100 MB limit; raw PSD/Kling source art stays outside the repo.
 4. ✅ GDD and this plan in `Docs/`; `CLAUDE.md` at the root.
-5. Phase 1: create the Unity project **inside this folder** (Unity Hub → New project → Universal 2D, location = this folder's parent, name `FarmFury_Rampage`), then GitHub Actions for tests (§12.5).
+5. ✅ Unity 6000.5.6f1 Universal 2D project at the repo root (2026-10-09). Next: GitHub Actions for tests (§12.5).
 
 ### 2.2 Unity project
 - Editor **6000.5.6f1** (same as Stampede). Template: **Universal 2D (URP)**. Portrait only (`Screen.orientation = Portrait`, auto-rotation off).
