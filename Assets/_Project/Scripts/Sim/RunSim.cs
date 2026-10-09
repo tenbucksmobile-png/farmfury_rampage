@@ -19,6 +19,9 @@ namespace FarmFuryRampage.Sim
         readonly RunConfig config;
         readonly float tickSeconds;
         readonly Robot[] robots;
+        /// <summary>Spawn indices in the order robots reach the spawn horizon (they roll from the start of the run).</summary>
+        readonly int[] spawnOrder;
+        readonly float[] spawnTime;
         readonly Projectile[] projectiles;
         readonly GateRowState[] gateRows;
         readonly float[] emitterTimers;
@@ -60,6 +63,7 @@ namespace FarmFuryRampage.Sim
             random = new Random(config.seed == 0 ? 1u : config.seed);
 
             robots = new Robot[math.max(1, config.spawns.Length)];
+            (spawnOrder, spawnTime) = ScheduleSpawns(config);
             projectiles = new Projectile[math.max(1, config.combat.projectileCap)];
 
             gateRows = new GateRowState[config.gateRows.Length];
@@ -123,21 +127,44 @@ namespace FarmFuryRampage.Sim
             HerdX = math.clamp(HerdX + math.clamp(target - HerdX, -step, step), -limit, limit);
         }
 
+        /// <summary>
+        /// Every robot rolls toward the herd from the start of the run; it is spawned (made live) when its rolling
+        /// position reaches the horizon ahead of the herd. Spawning in that order keeps a packed horde packed on
+        /// screen: if robots only started moving when spawned, each row would set off later than the one in front
+        /// and the rows would drift apart.
+        /// </summary>
+        static (int[] order, float[] time) ScheduleSpawns(RunConfig config)
+        {
+            int count = config.spawns.Length;
+            var order = new int[count];
+            var time = new float[count];
+            for (int i = 0; i < count; i++)
+            {
+                SpawnConfig spawn = config.spawns[i];
+                float closing = config.track.pace + config.robotTypes[spawn.robotType].speed;
+                float gap = spawn.distance - config.track.spawnAhead;
+                time[i] = gap <= 0f ? 0f : closing > 0f ? gap / closing : float.MaxValue;
+                order[i] = i;
+            }
+            System.Array.Sort(time, order);
+            return (order, time);
+        }
+
         void SpawnRobots()
         {
-            float horizon = HerdDistance + config.track.spawnAhead;
             float hpScale = config.RobotHpScale;
-            while (nextSpawn < config.spawns.Length && config.spawns[nextSpawn].distance <= horizon)
+            while (nextSpawn < spawnOrder.Length && spawnTime[nextSpawn] <= Time)
             {
-                SpawnConfig spawn = config.spawns[nextSpawn];
+                SpawnConfig spawn = config.spawns[spawnOrder[nextSpawn]];
+                RobotStats stats = config.robotTypes[spawn.robotType];
                 float spawnScale = spawn.hpScale > 0f ? spawn.hpScale : 1f;
-                float hp = config.robotTypes[spawn.robotType].hp * hpScale * spawnScale;
+                float hp = stats.hp * hpScale * spawnScale;
                 robots[nextSpawn] = new Robot
                 {
                     active = true,
                     type = spawn.robotType,
                     x = spawn.x,
-                    distance = spawn.distance,
+                    distance = spawn.distance - stats.speed * Time,
                     hp = hp,
                     maxHp = hp,
                 };

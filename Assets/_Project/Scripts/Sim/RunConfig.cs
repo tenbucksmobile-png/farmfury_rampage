@@ -65,10 +65,17 @@ namespace FarmFuryRampage.Sim
                 return types.Count - 1;
             }
 
+            // Authored robot distances are where the robot MEETS the herd. Robots roll from the start of the run, so
+            // each starts further out: meet * (pace + speed) / pace. Spacing between rows is physical (on screen).
+            float pace = tuning.track.pace;
+            float StartDistance(RobotDef robot, float meet) =>
+                pace > 0f ? meet * (pace + robot.stats.speed) / pace : meet;
+
             foreach (WaveDef wave in level.waves)
             {
                 if (wave.robot == null) continue;
                 int type = TypeOf(wave.robot);
+                float first = StartDistance(wave.robot, wave.distance);
                 int columns = math.max(1, wave.columns);
                 float firstColumn = -0.5f * (columns - 1) * wave.columnSpacing;
                 for (int i = 0; i < wave.count; i++)
@@ -79,7 +86,7 @@ namespace FarmFuryRampage.Sim
                     {
                         robotType = type,
                         x = math.clamp(wave.x + firstColumn + c * wave.columnSpacing + jitter, -halfWidth, halfWidth),
-                        distance = wave.distance + i * wave.spacing,
+                        distance = first + i * wave.spacing,
                         hpScale = 1f,
                     });
                 }
@@ -89,7 +96,8 @@ namespace FarmFuryRampage.Sim
             {
                 if (stream.robot == null || stream.rowSpacing <= 0f) continue;
                 int type = TypeOf(stream.robot);
-                float span = stream.endDistance - stream.startDistance;
+                float streamStart = StartDistance(stream.robot, stream.startDistance);
+                float span = StartDistance(stream.robot, stream.endDistance) - streamStart;
                 int rowCount = (int)math.floor(span / stream.rowSpacing) + 1;
                 for (int i = 0; i < rowCount; i++)
                 {
@@ -105,7 +113,7 @@ namespace FarmFuryRampage.Sim
                         {
                             robotType = type,
                             x = math.clamp(stream.x + firstColumn + c * stream.columnSpacing, -halfWidth, halfWidth),
-                            distance = stream.startDistance + i * stream.rowSpacing,
+                            distance = streamStart + i * stream.rowSpacing,
                             hpScale = hpScale,
                         });
                     }

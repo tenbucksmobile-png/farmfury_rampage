@@ -99,5 +99,5 @@ MonoBehaviour:
     columnsEnd: 5
     rowSpacing: 0.95
     columnSpacing: 0.95
-    hpMultiplierEnd: 8
+    hpMultiplierEnd: 4
     hpRampStart: 0.4

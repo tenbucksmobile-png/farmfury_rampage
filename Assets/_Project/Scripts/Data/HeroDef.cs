@@ -17,7 +17,7 @@ namespace FarmFuryRampage.Data
         [Tooltip("The thrown egg. File named egg.")]
         public Sprite projectileSprite;
         [Tooltip("Drawn width of one animal as a multiple of the herd slot spacing (above 1 they overlap into a crowd).")]
-        public float artScale = 1.6f;
+        public float artScale = 3f;
         [Tooltip("Run animation frames per second.")]
         public float frameRate = 10f;
     }

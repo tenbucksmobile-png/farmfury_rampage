@@ -13,6 +13,7 @@ namespace FarmFuryRampage.Tests
         const string BlastPath = RampageArt.ArtRoot + "/Effects/blast_zz_test.png";
         const string RunPath = RampageArt.ArtRoot + "/Heroes/Cluck/run_zz_test.png";
         const string EggPath = RampageArt.ArtRoot + "/Heroes/Cluck/egg_zz_test.png";
+        const string VariantPath = RampageArt.ArtRoot + "/Robots/BoltWalker/zz_variant_test.png";
 
         static void WritePng(string path)
         {
@@ -31,6 +32,7 @@ namespace FarmFuryRampage.Tests
                 WritePng(BlastPath);
                 WritePng(RunPath);
                 WritePng(EggPath);
+                WritePng(VariantPath);
 
                 var importer = (TextureImporter)AssetImporter.GetAtPath(BlastPath);
                 Assert.AreEqual(TextureImporterType.Sprite, importer.textureType);
@@ -41,15 +43,18 @@ namespace FarmFuryRampage.Tests
                 Assert.IsNotNull(art.blast, "blast wired from Effects/");
                 var cluck = AssetDatabase.LoadAssetAtPath<HeroDef>("Assets/_Project/ScriptableObjects/Heroes/Hero_Cluck.asset");
                 Assert.IsNotNull(cluck.projectileSprite, "egg wired from Heroes/Cluck/");
-                Assert.AreEqual("egg_zz_test", cluck.projectileSprite.name);
                 Assert.IsTrue(System.Array.Exists(cluck.runFrames, s => s.name == "run_zz_test"), "run frame wired");
                 Assert.IsFalse(System.Array.Exists(cluck.runFrames, s => s.name == "egg_zz_test"), "egg is not a run frame");
+                var walker = AssetDatabase.LoadAssetAtPath<RobotDef>("Assets/_Project/ScriptableObjects/Robots/Robot_BoltWalker.asset");
+                Assert.IsTrue(System.Array.Exists(walker.variants, s => s.name == "zz_variant_test"), "non-walk robot file becomes a variant");
+                Assert.IsFalse(System.Array.Exists(walker.walkFrames, s => s.name == "zz_variant_test"), "variant is not a walk frame");
             }
             finally
             {
                 AssetDatabase.DeleteAsset(BlastPath);
                 AssetDatabase.DeleteAsset(RunPath);
                 AssetDatabase.DeleteAsset(EggPath);
+                AssetDatabase.DeleteAsset(VariantPath);
                 RampageArt.AssignAll();
             }
         }

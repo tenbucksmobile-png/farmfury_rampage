@@ -20,7 +20,7 @@ namespace FarmFuryRampage.Data
     [Serializable]
     public sealed class WaveDef
     {
-        [Tooltip("Distance along the track of the front row, in metres.")]
+        [Tooltip("Where the front row meets the herd, in metres along the track (robots roll in from further out).")]
         public float distance;
         public RobotDef robot;
         [Tooltip("Track X of the group centre in metres (0 = middle).")]
@@ -46,7 +46,9 @@ namespace FarmFuryRampage.Data
     [Serializable]
     public sealed class HordeStreamDef
     {
+        [Tooltip("Where the front of the horde meets the herd, in metres along the track.")]
         public float startDistance;
+        [Tooltip("Where the back of the horde meets the herd, in metres along the track.")]
         public float endDistance;
         public RobotDef robot;
         [Tooltip("Track X of the stream centre in metres.")]

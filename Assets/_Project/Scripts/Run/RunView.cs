@@ -52,6 +52,13 @@ namespace FarmFuryRampage.Run
         const float FramePhaseStep = 0.37f;
         /// <summary>Depth offset per metre up the screen (camera looks along +z), used for front-to-back overlap.</summary>
         const float DepthPerMetre = 0.001f;
+        /// <summary>Single-image robots bob as they roll so the horde does not look frozen.</summary>
+        const float RobotBobHeight = 0.05f;
+        const float RobotBobSpeed = 12f;
+        const int FeatherPoolSize = 32;
+        const float FeatherSeconds = 0.6f;
+        const float FeatherSize = 1.2f;
+        const float FeatherRise = 0.8f;
 
         Camera cam;
         RunSim sim;
@@ -78,6 +85,10 @@ namespace FarmFuryRampage.Run
         readonly float[] blastAge = new float[BlastPoolSize];
         readonly float2[] blastPosition = new float2[BlastPoolSize];
         int blastCursor;
+        readonly List<SpriteRenderer> featherPuffs = new();
+        readonly float[] featherAge = new float[FeatherPoolSize];
+        readonly float2[] featherPosition = new float2[FeatherPoolSize];
+        int featherCursor;
         TextMesh countLabel;
         float countPop;
 
@@ -111,6 +122,7 @@ namespace FarmFuryRampage.Run
             projectiles.Clear();
             gatePanels.Clear();
             blasts.Clear();
+            featherPuffs.Clear();
 
             RunConfig config = run.Config;
             track = MakeSprite("Track", square, TrackColor, TrackOrder);
@@ -146,6 +158,14 @@ namespace FarmFuryRampage.Run
                 blastAge[i] = BlastSeconds;
             }
 
+            Sprite feathers = art != null ? art.feathers : null;
+            for (int i = 0; i < FeatherPoolSize && feathers != null; i++)
+            {
+                featherPuffs.Add(MakeSprite("Feathers", feathers, Color.white, HerdOrder + 1));
+                featherPuffs[i].enabled = false;
+                featherAge[i] = FeatherSeconds;
+            }
+
             countLabel = MakeLabel("HerdCount", CountLabelSize);
             countPop = 0f;
         }
@@ -156,6 +176,13 @@ namespace FarmFuryRampage.Run
             {
                 if (e.type == RunEventType.GatePassed || e.type == RunEventType.AnimalsLost)
                     countPop = 1f;
+                if (e.type == RunEventType.AnimalsLost && featherPuffs.Count > 0)
+                {
+                    // Knocked-out animals tumble away in a puff of feathers where the robot hit the herd.
+                    featherAge[featherCursor] = 0f;
+                    featherPosition[featherCursor] = new float2(e.x, e.distance);
+                    featherCursor = (featherCursor + 1) % featherPuffs.Count;
+                }
                 if (e.type == RunEventType.Explosion)
                 {
                     blastAge[blastCursor] = 0f;
@@ -176,13 +203,29 @@ namespace FarmFuryRampage.Run
             RenderRobots(config);
             RenderProjectiles(config);
             RenderBlasts(config);
+            RenderFeathers();
             RenderGates(config);
+        }
+
+        void RenderFeathers()
+        {
+            for (int i = 0; i < featherPuffs.Count; i++)
+            {
+                featherAge[i] += Time.deltaTime;
+                float t = featherAge[i] / FeatherSeconds;
+                featherPuffs[i].enabled = t < 1f;
+                if (t >= 1f) continue;
+
+                featherPuffs[i].color = new Color(1f, 1f, 1f, 1f - t * t);
+                float y = featherPosition[i].y - sim.HerdDistance + FeatherRise * t;
+                PlaceFit(featherPuffs[i], featherPosition[i].x, y, FeatherSize * (0.6f + 0.4f * t));
+            }
         }
 
         void FrameCamera(RunConfig config)
         {
             cam.orthographic = true;
-            float aspect = (float)Screen.width / math.max(1, Screen.height);
+            float aspect = math.max(0.01f, cam.aspect); // follows the screen, or a render target when capturing
             cam.orthographicSize = config.track.viewWidth / aspect * 0.5f;
             float centreAboveHerd = (0.5f - config.track.herdScreenY) * cam.orthographicSize * 2f;
             cam.transform.position = new Vector3(0f, centreAboveHerd, -10f);
@@ -263,17 +306,22 @@ namespace FarmFuryRampage.Run
                 used++;
 
                 RobotDef def = robotTypes[robot.type];
-                bool hasArt = def.walkFrames != null && def.walkFrames.Length > 0;
+                bool animated = def.walkFrames != null && def.walkFrames.Length > 0;
+                bool hasVariants = def.variants != null && def.variants.Length > 0;
+                bool hasArt = animated || hasVariants;
                 float diameter = config.robotTypes[robot.type].radius * 2f;
                 float y = robot.distance - sim.HerdDistance;
                 body.enabled = true;
-                body.sprite = hasArt ? Frame(def.walkFrames, def.frameRate, i) : square;
+                if (animated) body.sprite = Frame(def.walkFrames, def.frameRate, i);
+                else if (hasVariants) body.sprite = def.variants[i % def.variants.Length];
+                else body.sprite = square;
+                float bob = !animated && hasVariants ? RobotBobHeight * math.abs(math.sin(Time.time * RobotBobSpeed + i)) : 0f;
 
                 // Armoured robots (horde HP ramp) shade toward dark red so tougher stretches read at a glance.
                 float baseHp = config.robotTypes[robot.type].hp * config.RobotHpScale;
                 float armour = baseHp > 0f ? math.saturate(math.log2(math.max(1f, robot.maxHp / baseHp)) / math.log2(FullArmourTint)) : 0f;
                 body.color = Color.Lerp(hasArt ? Color.white : def.greyboxColor, ArmouredColor, armour);
-                if (hasArt) PlaceFit(body, robot.x, y, diameter * def.artScale);
+                if (hasArt) PlaceFit(body, robot.x, y + bob, diameter * def.artScale);
                 else Place(body, robot.x, y, diameter, diameter);
 
                 bool damaged = robot.hp < robot.maxHp;

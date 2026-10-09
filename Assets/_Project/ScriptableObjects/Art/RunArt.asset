@@ -12,8 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 876df0e12aa0a30459d009f21cd1c704, type: 3}
   m_Name: RunArt
   m_EditorClassIdentifier: FarmFuryRampage.Data::FarmFuryRampage.Data.RunArt
-  ground: {fileID: 0}
-  blast: {fileID: 0}
+  ground: {fileID: 21300000, guid: cbeb7854fb115c84ca79db1df26c9474, type: 3}
+  blast: {fileID: 21300000, guid: 4888fc2f40c95d647822fb05e4dd8e7a, type: 3}
+  feathers: {fileID: 21300000, guid: ca7725b30299cc34f8570aa9a9f91215, type: 3}
   gateAdd: {fileID: 0}
   gateSubtract: {fileID: 0}
   gateMultiply: {fileID: 0}

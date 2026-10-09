@@ -14,6 +14,8 @@ namespace FarmFuryRampage.Data
         public Sprite ground;
         [Tooltip("Egg-grenade explosion. File: Effects/blast.")]
         public Sprite blast;
+        [Tooltip("Puff where animals are knocked out of the herd. File: Effects/feather (e.g. FeatherBurst.png).")]
+        public Sprite feathers;
         [Tooltip("Gate panel frames. Files: Gates/add, Gates/subtract, Gates/multiply, Gates/divide.")]
         public Sprite gateAdd;
         public Sprite gateSubtract;

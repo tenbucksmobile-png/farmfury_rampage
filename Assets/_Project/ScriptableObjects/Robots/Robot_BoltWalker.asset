@@ -24,5 +24,9 @@ MonoBehaviour:
     scrap: 2
   greyboxColor: {r: 0.45, g: 0.48, b: 0.55, a: 1}
   walkFrames: []
+  variants:
+  - {fileID: 21300000, guid: e2f8046e96d44a9469f98f3e5668e660, type: 3}
+  - {fileID: 21300000, guid: 89636c37cc98dee469ca0766b3a3781d, type: 3}
+  - {fileID: 21300000, guid: d3e1b0494b2c6424e9f32a4a270ee191, type: 3}
   artScale: 1.25
   frameRate: 6

@@ -88,6 +88,65 @@ namespace FarmFuryRampage.Tests
         }
 
         [Test]
+        public void PackedRows_KeepTheirSpacingOnScreen()
+        {
+            RunConfig config = Config(herd: 10, pace: 2f, length: 200f);
+            config.hero.fireInterval = 0f;
+            config.spawns = new[]
+            {
+                new SpawnConfig { robotType = 0, x = 0f, distance = 40f },
+                new SpawnConfig { robotType = 0, x = 0f, distance = 40.95f },
+            };
+            var sim = new RunSim(config);
+
+            RunFor(sim, 8f);
+
+            Assert.IsTrue(sim.Robots[0].active && sim.Robots[1].active, "both rows live");
+            Assert.AreEqual(0.95f, sim.Robots[1].distance - sim.Robots[0].distance, 1e-3f,
+                "rows that start 0.95 m apart are still 0.95 m apart once on screen");
+        }
+
+        [Test]
+        public void AuthoredRobotDistance_IsWhereItMeetsTheHerd()
+        {
+            var tuning = UnityEngine.ScriptableObject.CreateInstance<GameTuning>();
+            tuning.track = new TrackTuning { width = 9f, pace = 2f, viewWidth = 10f, herdScreenY = 0.3f, spawnAhead = 16f, despawnBehind = 8f };
+            tuning.herd = new HerdTuning { cap = 300, drawnCap = 60, slotSpacing = 0.28f, steerSpeed = 8f, dragSensitivity = 1f, steadySteerMultiplier = 0.5f };
+            tuning.tickRate = 60;
+            var hero = UnityEngine.ScriptableObject.CreateInstance<HeroDef>();
+            var robot = UnityEngine.ScriptableObject.CreateInstance<RobotDef>();
+            robot.stats = new RobotStats { hp = 10f, speed = 1.2f, bite = 1, radius = 0.42f, homing = 0f, scrap = 1 };
+            var level = UnityEngine.ScriptableObject.CreateInstance<LevelDef>();
+            level.length = 200f;
+            level.startingHerd = 50;
+            level.waves = new System.Collections.Generic.List<WaveDef> { new() { distance = 40f, robot = robot, x = 0f, count = 1, columns = 1 } };
+
+            try
+            {
+                RunConfig config = RunConfigFactory.Create(tuning, hero, level, out _);
+                config.hero.fireInterval = 0f;
+                var sim = new RunSim(config);
+                float metAt = -1f;
+                for (int i = 0; i < 60 * 40 && metAt < 0f; i++)
+                {
+                    sim.Tick(new RunInput());
+                    foreach (RunEvent e in sim.Events)
+                        if (e.type == RunEventType.AnimalsLost) metAt = sim.HerdDistance;
+                }
+
+                // Contact happens when the robot is one herd footprint + robot radius ahead, so slightly before 40 m.
+                Assert.AreEqual(40f, metAt, 2f);
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(tuning);
+                UnityEngine.Object.DestroyImmediate(hero);
+                UnityEngine.Object.DestroyImmediate(robot);
+                UnityEngine.Object.DestroyImmediate(level);
+            }
+        }
+
+        [Test]
         public void SameConfigAndInput_GivesIdenticalRuns()
         {
             RunConfig config = Config(herd: 12, length: 60f);

@@ -95,9 +95,9 @@ MonoBehaviour:
     endDistance: 200
     robot: {fileID: 11400000, guid: 01529c9cc02c4d746b69ce49893955a9, type: 2}
     x: 0
-    columnsStart: 6
-    columnsEnd: 6
+    columnsStart: 5
+    columnsEnd: 5
     rowSpacing: 0.95
     columnSpacing: 0.95
-    hpMultiplierEnd: 7
+    hpMultiplierEnd: 4
     hpRampStart: 0.5

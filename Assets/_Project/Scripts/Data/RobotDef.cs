@@ -15,6 +15,8 @@ namespace FarmFuryRampage.Data
         [Header("Art (auto-filled from Assets/_Project/Art/Robots/<DisplayName without spaces>/)")]
         [Tooltip("Front view, rolling down the screen toward the herd. Files named walk_00, walk_01, ...")]
         public Sprite[] walkFrames = System.Array.Empty<Sprite>();
+        [Tooltip("Alternative single-image looks (any other file in the folder); each robot in the horde gets one. Used when there are no walk frames.")]
+        public Sprite[] variants = System.Array.Empty<Sprite>();
         [Tooltip("Drawn width as a multiple of the robot's collision diameter.")]
         public float artScale = 1.25f;
         [Tooltip("Walk animation frames per second.")]

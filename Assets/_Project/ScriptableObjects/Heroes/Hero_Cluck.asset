@@ -28,7 +28,15 @@ MonoBehaviour:
     scatter: 0.6
     arcHeight: 2.5
   greyboxColor: {r: 1, g: 0.92, b: 0.55, a: 1}
-  runFrames: []
-  projectileSprite: {fileID: 0}
-  artScale: 1.6
+  runFrames:
+  - {fileID: 21300000, guid: 529a2b757bd4b844099a7d2e776a294e, type: 3}
+  - {fileID: 21300000, guid: 4c8f53ff08ce75946ba0468945f0f3f1, type: 3}
+  - {fileID: 21300000, guid: 2383d267c0b75d245aeced8ce2628226, type: 3}
+  - {fileID: 21300000, guid: e7842049cfbe4fa47bfacb0302db3a0a, type: 3}
+  - {fileID: 21300000, guid: c175b6d4d87a943468b8330a97e948d7, type: 3}
+  - {fileID: 21300000, guid: ea0757e1979baaa4c8844b61699228e5, type: 3}
+  - {fileID: 21300000, guid: c11152777c042c641bd28913646a4a64, type: 3}
+  - {fileID: 21300000, guid: 224587e482136ba45b9f09577ff652e2, type: 3}
+  projectileSprite: {fileID: 21300000, guid: e7a0274193452fb408db7d3968e324b3, type: 3}
+  artScale: 3
   frameRate: 10

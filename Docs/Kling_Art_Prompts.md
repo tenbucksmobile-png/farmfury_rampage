@@ -132,32 +132,71 @@ no objects in the middle, top and bottom edges tile seamlessly
 ```
 Tip: if the top/bottom don't tile, use Photopea *Filter → Other → Offset* (half the height) and clone out the seam.
 
-### A8. Gate frames → `Art/Gates/add.png`, `multiply.png`, `subtract.png`, `divide.png` · 16:9
+### A8. Gate frames → `Art/Gates/add.png`, `multiply.png`, `subtract.png`, `divide.png` · 21:9
 
-Add (+):
+**What the game needs:** one *complete* gateway the herd runs through, seen head-on — two short posts at the left and
+right ends, a crossbar on top, and between them a **glowing see-through coloured light curtain** (an energy screen,
+not a window or glass object). The game prints the number (+8, ×2…) over the middle, so the curtain must be empty and
+evenly lit. It is drawn about 4 m wide on a track seen from above, so it must read as a simple bold shape at small size.
+
+What went wrong in the first try: "glass pane" made Kling render a photo-real barn door close-up with a drinking glass
+on a shelf. The prompts below describe the whole object, say *cartoon game asset*, and the extra negative prompt rules
+out the things it invented.
+
+**Extra negative prompt for all four gates** (add to the usual one):
 ```
-[Style block] A wide wooden farm gate panel seen from slightly above, chunky rounded-arch wooden frame with a glowing
-BLUE glass pane in the middle, the centre of the glass left completely empty and clear, friendly and inviting,
-nails and rope details, plain flat light grey background
+photograph, photorealistic, realistic wood grain, close-up, macro, cropped, partial view, door, barn door, cabinet,
+window, shelf, cup, drinking glass, vase, bottle, jar, glass object, objects inside the gate, hinges, interior room,
+perspective from below
 ```
-Multiply (×):
+
+Add (+), blue, rounded arch:
 ```
-[Style block] A wide wooden farm gate panel seen from slightly above, extra-thick double wooden frame with golden corner
-brackets and a glowing BLUE glass pane, small sparkles on the frame, the centre of the glass left completely empty,
-plain flat light grey background
+[Style block] Cartoon mobile-game asset: one complete wide farm gateway seen straight from the front, the whole object
+fully visible and centred with empty space around it. Two short chunky wooden posts at the far left and far right,
+joined at the top by a gently curved wooden arch beam with two round nail heads. The wide space between the posts is
+filled edge to edge with a flat, evenly glowing, semi-transparent BRIGHT BLUE light curtain, like a shimmering energy
+screen, completely empty and smooth in the middle. Simple bold shapes, thick clean outlines, very wide and short
+proportions (about three times wider than tall), plain flat light grey background
 ```
-Subtract (−):
+
+Multiply (×), blue, double frame with gold:
 ```
-[Style block] A wide wooden farm gate panel seen from slightly above, jagged splintered wooden frame with metal spikes
-and a glowing RED glass pane, cheeky warning feel, the centre of the glass left completely empty, plain flat light
-grey background
+[Style block] Cartoon mobile-game asset: one complete wide farm gateway seen straight from the front, the whole object
+fully visible and centred with empty space around it. Two thick double wooden posts at the far left and far right with
+shiny gold corner brackets, joined at the top by a straight double wooden beam with small gold stars. The wide space
+between the posts is filled edge to edge with a flat, evenly glowing, semi-transparent BRIGHT BLUE light curtain with a
+few tiny sparkles near the edges, completely empty and smooth in the middle. Simple bold shapes, thick clean outlines,
+very wide and short proportions (about three times wider than tall), plain flat light grey background
 ```
-Divide (÷):
+
+Subtract (−), red, jagged with spikes:
 ```
-[Style block] A wide wooden farm gate panel seen from slightly above, cracked wooden frame held together with metal
-bands and bolts, a glowing RED glass pane with a crack across one corner, the centre of the glass left completely
-empty, plain flat light grey background
+[Style block] Cartoon mobile-game asset: one complete wide farm gateway seen straight from the front, the whole object
+fully visible and centred with empty space around it. Two splintered wooden posts at the far left and far right with
+small metal spikes on top, joined by a jagged broken wooden beam with a yellow-and-black hazard stripe. The wide space
+between the posts is filled edge to edge with a flat, evenly glowing, semi-transparent BRIGHT RED light curtain,
+completely empty and smooth in the middle. Cheeky warning look, simple bold shapes, thick clean outlines, very wide and
+short proportions (about three times wider than tall), plain flat light grey background
 ```
+
+Divide (÷), red, cracked and bolted:
+```
+[Style block] Cartoon mobile-game asset: one complete wide farm gateway seen straight from the front, the whole object
+fully visible and centred with empty space around it. Two cracked wooden posts at the far left and far right held
+together with grey metal bands and bolts, joined by a straight beam that is split in the middle and patched with a
+metal plate. The wide space between the posts is filled edge to edge with a flat, evenly glowing, semi-transparent
+BRIGHT RED light curtain, completely empty and smooth in the middle. Simple bold shapes, thick clean outlines, very
+wide and short proportions (about three times wider than tall), plain flat light grey background
+```
+
+Tips:
+- Generate **Add** first; when you like it, upload it as the **reference image** for the other three so the style and
+  proportions match.
+- If Kling keeps adding objects, a reliable fallback: generate one empty gateway, then make the others in Photopea
+  (hue-shift blue → red and paint the spikes / gold / cracks on the frame).
+- Crop tight to the gateway and keep the light curtain semi-transparent when removing the background (the track should
+  faintly show through it).
 
 ---
 

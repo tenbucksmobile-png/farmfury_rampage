@@ -193,7 +193,7 @@ namespace FarmFuryRampage.Editor
                 Row(l, 105f, Mul(3), Add(10));
                 Row(l, 135f, Sub(5), Add(5), Mul(2));
                 Row(l, 162f, Add(10), Sub(20));
-                Stream(l, 25f, 170f, walker, 5, 0.4f, 8f);
+                Stream(l, 25f, 170f, walker, 5, 0.4f, 4f);
                 Elite(l, 70f, tank, 0f);
                 Elite(l, 130f, tank, -1.5f);
                 Wave(l, 60f, drone, 0f, 6, 0.8f, 2.5f);
@@ -209,7 +209,7 @@ namespace FarmFuryRampage.Editor
                 Row(l, 105f, Div(2), Mul(2));
                 Row(l, 140f, Sub(6), Add(6), Sub(2));
                 Row(l, 175f, Mul(2), Add(15));
-                Stream(l, 25f, 200f, walker, 6, 0.5f, 7f);
+                Stream(l, 25f, 200f, walker, 5, 0.5f, 4f);
                 Elite(l, 80f, tank, 1f);
                 Elite(l, 140f, tank, -1f);
                 Elite(l, 180f, tank, 0f);
@@ -226,7 +226,7 @@ namespace FarmFuryRampage.Editor
                 Row(l, 140f, Mul(2), Add(20));
                 Row(l, 175f, Sub(15), Add(10));
                 Row(l, 210f, Mul(2), Sub(5), Add(25));
-                Stream(l, 25f, 230f, walker, 6, 0.5f, 16f);
+                Stream(l, 25f, 230f, walker, 4, 0.5f, 15f);
                 Elite(l, 70f, tank, 0f);
                 Elite(l, 120f, tank, 1.5f);
                 Elite(l, 170f, tank, -1.5f);

@@ -13,8 +13,8 @@ namespace FarmFuryRampage.Editor
     /// Drop-in art. PNGs placed under Assets/_Project/Art/ are imported as sprites and wired to the game by folder and
     /// file name (see Art/README.md):
     ///   Heroes/&lt;DisplayName&gt;/run_*.png, egg.png      -> HeroDef.runFrames, projectileSprite
-    ///   Robots/&lt;DisplayNameNoSpaces&gt;/walk_*.png        -> RobotDef.walkFrames
-    ///   Track/ground.png, Effects/blast.png               -> RunArt.ground, RunArt.blast
+    ///   Robots/&lt;DisplayNameNoSpaces&gt;/walk_*.png        -> RobotDef.walkFrames (other files -> variants)
+    ///   Track/ground.png, Effects/blast.png, feather*.png -> RunArt.ground, blast, feathers
     ///   Gates/add.png, subtract.png, multiply.png, divide.png -> RunArt gate frames
     /// Wiring re-runs automatically whenever anything under Art/ changes, or via FarmFury Rampage > Art.
     /// </summary>
@@ -49,10 +49,11 @@ namespace FarmFuryRampage.Editor
             {
                 List<(string name, Sprite sprite)> sprites = SpritesIn($"{ArtRoot}/Robots/{FolderName(robot.displayName)}");
                 Sprite[] walk = Matching(sprites, "walk");
-                if (walk.Length == 0) walk = Excluding(sprites);
+                Sprite[] variants = Excluding(sprites, "walk");
                 robot.walkFrames = walk;
+                robot.variants = variants;
                 EditorUtility.SetDirty(robot);
-                report.Append($"{robot.displayName}: {walk.Length} walk frames; ");
+                report.Append($"{robot.displayName}: {walk.Length} walk frames, {variants.Length} variants; ");
             }
 
             RunArt art = GetOrCreateRunArt();
@@ -61,12 +62,13 @@ namespace FarmFuryRampage.Editor
             List<(string name, Sprite sprite)> gates = SpritesIn($"{ArtRoot}/Gates");
             art.ground = First(track, "ground");
             art.blast = First(effects, "blast", "explosion");
+            art.feathers = First(effects, "feather");
             art.gateAdd = First(gates, "add", "plus");
             art.gateSubtract = First(gates, "subtract", "minus");
             art.gateMultiply = First(gates, "multiply", "times");
             art.gateDivide = First(gates, "divide");
             EditorUtility.SetDirty(art);
-            report.Append($"ground {(art.ground != null ? "yes" : "no")}, blast {(art.blast != null ? "yes" : "no")}, gates ");
+            report.Append($"ground {(art.ground != null ? "yes" : "no")}, blast {(art.blast != null ? "yes" : "no")}, feathers {(art.feathers != null ? "yes" : "no")}, gates ");
             report.Append($"{Count(art.gateAdd, art.gateSubtract, art.gateMultiply, art.gateDivide)}/4.");
 
             AssetDatabase.SaveAssets();
