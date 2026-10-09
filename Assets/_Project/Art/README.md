@@ -27,3 +27,5 @@ Already usable from existing FarmFury art: `FarmFury_Artwork/Rough_Effects/Explo
 The platformer character and robot art is side-on, so it needs new back/front views for Rampage.
 
 Per-asset tuning (Inspector): `HeroDef.artScale` / `frameRate`, `RobotDef.artScale` / `frameRate`.
+
+Kling AI prompts for every item above (and the full launch set): `Docs/Kling_Art_Prompts.md` in the repo root.
