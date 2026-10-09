@@ -1,0 +1,96 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c80e23f0c76527c4a9619f8c024537e5, type: 3}
+  m_Name: Level_Proto01
+  m_EditorClassIdentifier: FarmFuryRampage.Data::FarmFuryRampage.Data.LevelDef
+  id: proto_01
+  displayName: "Proto 1 \xB7 First Gates"
+  length: 180
+  difficultyLevel: 1
+  startingHerd: 5
+  seed: 101
+  gateRows:
+  - distance: 20
+    panels:
+    - kind: 2
+      value: 2
+    - kind: 0
+      value: 3
+  - distance: 45
+    panels:
+    - kind: 0
+      value: 5
+    - kind: 1
+      value: 3
+  - distance: 70
+    panels:
+    - kind: 0
+      value: 8
+    - kind: 3
+      value: 2
+  - distance: 100
+    panels:
+    - kind: 2
+      value: 3
+    - kind: 0
+      value: 10
+  - distance: 130
+    panels:
+    - kind: 1
+      value: 5
+    - kind: 0
+      value: 5
+    - kind: 2
+      value: 2
+  - distance: 160
+    panels:
+    - kind: 0
+      value: 10
+    - kind: 1
+      value: 20
+  waves:
+  - distance: 30
+    robot: {fileID: 11400000, guid: 4f7f8df6388dfe449a2d3f674bd1f7c3, type: 2}
+    x: 0
+    count: 5
+    spacing: 1
+    xJitter: 2
+  - distance: 55
+    robot: {fileID: 11400000, guid: 01529c9cc02c4d746b69ce49893955a9, type: 2}
+    x: -2
+    count: 3
+    spacing: 3
+    xJitter: 0
+  - distance: 80
+    robot: {fileID: 11400000, guid: 4f7f8df6388dfe449a2d3f674bd1f7c3, type: 2}
+    x: 1
+    count: 8
+    spacing: 0.8
+    xJitter: 3
+  - distance: 110
+    robot: {fileID: 11400000, guid: 01529c9cc02c4d746b69ce49893955a9, type: 2}
+    x: 1
+    count: 5
+    spacing: 2.5
+    xJitter: 1.5
+  - distance: 140
+    robot: {fileID: 11400000, guid: 4f7f8df6388dfe449a2d3f674bd1f7c3, type: 2}
+    x: 0
+    count: 10
+    spacing: 0.6
+    xJitter: 3.5
+  - distance: 150
+    robot: {fileID: 11400000, guid: 01529c9cc02c4d746b69ce49893955a9, type: 2}
+    x: 0
+    count: 6
+    spacing: 2
+    xJitter: 3

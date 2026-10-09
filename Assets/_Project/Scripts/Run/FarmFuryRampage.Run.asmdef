@@ -1,0 +1,12 @@
+{
+    "name": "FarmFuryRampage.Run",
+    "rootNamespace": "FarmFuryRampage.Run",
+    "references": [
+        "FarmFuryRampage.Data",
+        "FarmFuryRampage.Sim",
+        "Unity.Mathematics",
+        "Unity.InputSystem",
+        "UnityEngine.UI"
+    ],
+    "autoReferenced": true
+}

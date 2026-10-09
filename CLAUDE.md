@@ -11,7 +11,17 @@ Portrait mobile lane shooter ("gate runner") with a light farm-rebuilding meta. 
 
 ## Status
 
-2026-10-09: empty Unity 6000.5.6f1 Universal 2D project at the repo root (template files only, no game code). Next: rest of Phase 1 (plan §13) — packages, `_Project` folders/asmdefs, portrait/Linear settings, then the greybox `RunSim`.
+**Phase 1 greybox built (2026-10-09): compiled, 42 edit-mode + 1 play-mode tests passing in batch mode; not yet hand-playtested.** Next: plan §13 WP 1.3 — playtest in the editor and tune `GameTuning` / level assets (G1–G7 defaults), then the 2D crowd art test (WP 1.4). Phase 2 starts only after the Prototype gate (testers replay without being asked).
+
+What exists:
+- `Scripts/Data` — `GameTuning`, `HeroDef`, `RobotDef`, `LevelDef` (+ `GateRowDef`, `WaveDef`) and tuning structs.
+- `Scripts/Sim` — `RunSim` (fixed 60 Hz, seeded, track coordinates): steering, herd count, phyllotaxis formation, staggered Cluck fan fire with damage scaling above the drawn cap / projectile budget, gates (+ − × ÷, shoot-to-improve with cap and cooldown, red→blue flip), Buzz Drone / Bolt Walker, bite, win at track end, fail at 0. `GateMath`, `Formation`, `RunConfigFactory`.
+- `Scripts/Run` — greybox only: `RunBootstrap`, `GreyboxRunView` (shapes + TextMesh), `GreyboxHud` (uGUI legacy Text), `RunInputReader` (relative drag, A/D). Phase 2 replaces the view/HUD.
+- `Scripts/Editor/RampageSetup` — menu **FarmFury Rampage > Setup > Run All** (project settings, prototype content, Run scene). Content is only created when missing, so Inspector tuning is never overwritten; **Rebuild Run Scene** overwrites the scene.
+- Content: `ScriptableObjects/Tuning/GameTuning`, `Heroes/Hero_Cluck`, `Robots/Robot_BuzzDrone`, `Robot_BoltWalker`, `Levels/Level_Proto01..03`. Scene: `Scenes/Run.unity` (only scene in the build).
+- The project was created from Hub's **Universal 3D** template; it was converted to the URP **2D** renderer (`Settings/UniversalRP` + `Renderer2D`, copied from Arcade's untouched template versions) and the 3D template assets removed.
+
+Play: open `Assets/_Project/Scenes/Run.unity`, set the Game view to a portrait phone resolution (e.g. 1080x2340), press Play. Drag or A/D to steer; R restart; N next level; tap/Space after a win or loss.
 
 ## Stack
 
@@ -40,11 +50,15 @@ Portrait mobile lane shooter ("gate runner") with a light farm-rebuilding meta. 
 
 ## Testing
 
+Unity must be closed (batch mode can't open a project the editor has open). Editor: `C:\Program Files\Unity\Hub\Editor\6000.5.6f1\Editor\Unity.exe`.
 ```
-Unity.exe -batchmode -projectPath . -runTests -testPlatform EditMode -testResults results-edit.xml
-Unity.exe -batchmode -projectPath . -runTests -testPlatform PlayMode -testResults results-play.xml
+Unity.exe -batchmode -nographics -projectPath . -runTests -testPlatform EditMode -testResults results-edit.xml -logFile edit.log
+Unity.exe -batchmode -nographics -projectPath . -runTests -testPlatform PlayMode -testResults results-play.xml -logFile play.log
+Unity.exe -batchmode -nographics -projectPath . -executeMethod FarmFuryRampage.Editor.RampageSetup.RunAllBatch -logFile setup.log
 ```
-Run both before each commit once the project exists. One feature per commit.
+Write results/logs outside the repo (or delete them). Run both test platforms before each commit. One feature per commit.
+
+Tests: `GateMathTests`, `FormationTests`, `RunSimTests` (incl. determinism and herd DPS = herd x hero DPS for 5..300 animals), `ContentValidationTests` (every LevelDef inside track bounds and level length; every HeroDef at the DPS target ±5%), `RunSceneSmokeTests` (play mode, fails on any logged error).
 
 ## Working with this repo
 

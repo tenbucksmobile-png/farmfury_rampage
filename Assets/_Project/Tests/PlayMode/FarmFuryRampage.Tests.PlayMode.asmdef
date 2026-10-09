@@ -1,0 +1,17 @@
+{
+    "name": "FarmFuryRampage.Tests.PlayMode",
+    "rootNamespace": "FarmFuryRampage.Tests",
+    "references": [
+        "FarmFuryRampage.Run",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
+    ],
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ]
+}

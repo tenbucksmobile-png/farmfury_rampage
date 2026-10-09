@@ -1,0 +1,9 @@
+{
+    "name": "FarmFuryRampage.Sim",
+    "rootNamespace": "FarmFuryRampage.Sim",
+    "references": [
+        "FarmFuryRampage.Data",
+        "Unity.Mathematics"
+    ],
+    "autoReferenced": true
+}

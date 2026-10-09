@@ -696,8 +696,8 @@ Each phase ends at a gate; no phase starts until its gate passes. Each feature f
 ### Phase 1 — Prototype (Weeks 1–2)
 | WP | Work |
 |---|---|
-| 1.1 | ✅ Repo, `.gitignore`/LFS, CLAUDE.md, docs. Then: Unity 6000.5.6f1 project in this folder, packages, asmdefs, test CI (§2) |
-| 1.2 | Unity greybox (C6): first `RunSim` + placeholder views — track scroll, drag steer, herd count, gates (+/−/×/÷), Bolt Walker + Buzz Drone, Cluck |
+| 1.1 | ✅ Repo, `.gitignore`, CLAUDE.md, docs, Unity 6000.5.6f1 project (converted to URP 2D), packages, asmdefs, portrait/IL2CPP/ARM64 settings. **Pending:** GitHub Actions test CI (needs a Unity licence secret in the repo) (§2) |
+| 1.2 | ✅ (2026-10-09, tests pass; hand-playtest pending) Unity greybox (C6): first `RunSim` + placeholder views — track scroll, drag steer, herd count, gates (+/−/×/÷), Bolt Walker + Buzz Drone, Cluck |
 | 1.3 | Playtest the adopted G1–G7 defaults; adjust numbers in data; record in a tuning sheet |
 | 1.4 | 2D crowd art test: 60 Cluck backs at phone scale (silhouette readability) |
 **Gate:** testers replay without being asked. Tuning sheet becomes first SO values.
