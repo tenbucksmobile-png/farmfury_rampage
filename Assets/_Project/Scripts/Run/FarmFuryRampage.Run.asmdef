@@ -6,7 +6,8 @@
         "FarmFuryRampage.Sim",
         "Unity.Mathematics",
         "Unity.InputSystem",
-        "UnityEngine.UI"
+        "UnityEngine.UI",
+        "FarmFury.Shared"
     ],
     "autoReferenced": true
 }

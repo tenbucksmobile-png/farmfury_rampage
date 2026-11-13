@@ -56,8 +56,27 @@ Play: open `Assets/_Project/Scenes/Run.unity`, set the Game view to a portrait p
 - Unity **6000.5.6f1** (same as Stampede), URP 2D 17.5, Linear colour space, portrait only
 - Input System 1.20 only (no legacy input)
 - Burst / Collections / Mathematics for the run simulation
-- uGUI 2.5 + TextMeshPro for **all** UI, built in code (port Stampede's `UIKit`, `SafeAreaFitter`, overlay screens)
-- LevelPlay 9.5 + AdMob, Unity IAP 5.4.2, UGS Analytics 6.3, UGS Remote Config — ported from Arcade
+- uGUI 2.5 + TextMeshPro for **all** UI, built in code on the **shared package `com.farmfury.core`** (below) - do
+  NOT copy Stampede's UI files any more
+- LevelPlay 9.5 + AdMob, UGS Analytics 6.3: the shared `AdManager` / `AnalyticsManager` from `com.farmfury.core`
+  (the SDKs came in with it 2026-11-13; inert until app keys are set). Unity IAP 5.4.2, UGS Remote Config: not yet.
+
+### Shared package `com.farmfury.core` (since 2026-11-13, shared-architecture Phase 3)
+
+- `Packages/com.farmfury.core/` is a **vendored copy** of `Desktop\FarmFury_Shared` (GitHub `farmfury_shared`; plan
+  `Desktop\Farm Fury Shared Architecture – Reference for Claude Code.md`). **Never edit it here**: change
+  FarmFury_Shared, release a tag, then `python ..\FarmFury_Shared\Tools\sync_shared.py . core <version>`. Current: 0.2.0.
+- Provides `UIKit`, `SafeAreaFitter`, `FitContent`, `HoldButton`, `HoldThenFade`, `HangingSignDrop`, `SpinAroundY`,
+  `ZoomedCover`, `CardCarouselController`, `RobotRing`, `ConfettiBurst`, `CosmeticTrailGhost` (`FarmFury.Shared.UI`),
+  `AdManager` + `IAdPolicy`, `AnalyticsManager` (`FarmFury.Shared.Monetisation`), `MonoSingleton`
+  (`FarmFury.Shared.Utilities`), `GameIdentity` (`FarmFury.Shared.Config`). `FarmFuryRampage.Run.asmdef` references
+  `FarmFury.Shared`; other Rampage assemblies don't need it yet.
+- The overlay screens (Pause, Settings, Shop, ParentalGate, Legal, purchase prompts, Leaderboards) arrive in the
+  package in Phase 4 - wait for them rather than porting Stampede's.
+- When ads go live: make the save layer implement `IAdPolicy` and set `AdManager.Policy`; apply Stampede's Android ad
+  setup (custom manifest with AD_ID / ad-services permissions removed for Families, the LevelPlay dependency XMLs in
+  `Assets/LevelPlay/Editor` at Stampede's versions). The XMLs there now are LevelPlay's defaults.
+- `UIKit.RoundButtonSize` is settable (default 160); set it before any UI is built if Rampage wants another size.
 - Shared FarmFury Supabase backend (planned): identity, cloud save, receipt validation
 
 ## Architecture rules
@@ -109,7 +128,9 @@ Tests: `GateMathTests`, `FormationTests`, `RunSimTests` (determinism, herd DPS =
 
 ## Related FarmFury projects
 
-- `Desktop/FarmFury_Arcade` — Pac-Man-style; source for Ads/IAP/Analytics managers, Cloud Build setup, web demo.
-- `Desktop/FarmFury_Stampede` — platformer; source for `UIKit`, `SafeAreaFitter`, overlay screens, `ParentalGate`.
+- `Desktop/FarmFury_Shared` — the shared packages (`com.farmfury.core`, `com.farmfury.franchise`); source for UI kit,
+  ads, analytics from now on.
+- `Desktop/FarmFury_Arcade` — Pac-Man-style (LIVE - read only); reference for IAP, Cloud Build setup, web demo.
+- `Desktop/FarmFury_Stampede` — platformer (LIVE - read only); reference for Android/iOS ad build setup.
 - `Desktop/FarmFury_Technical/FarmFury_Artwork` — shared art library (Rough_Characters, Rough_Effects, …) and `Rampage_Source/` for Rampage source exports.
-- `Desktop/FarmFury` — the original game (shelved).
+- `Desktop/FarmFury` — Farm Fury Cannonfire (the original game, renamed 2026-11-10; pre-launch, Unity project in `unity/`).
